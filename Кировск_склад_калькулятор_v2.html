@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Кировск — интерактивная финмодель склада</title>
+<style>
+:root{
+  /* палитра: #ECECFC лаванда · #6956F6 сине-фиолет · #A3A1AF серый · #8C4AF2 фиолет · #AA9ADB лаванда-2 */
+  --bg:#2a2833; --panel:#332f3d; --panel2:#3e3a48; --line:#4c4857; --text:#eceaf2;
+  --muted:#a3a1af; --accent:#aa9adb; --accent2:#37d39b; --warn:#ffb454; --neg:#ff6b6b;
+  --chip:#3a3350; --chipA:#4b3a75; --fill:#8c4af2; --fillH:#7d3ce6; --fillT:#5f2ea0; --gtext:#17e1bc;
+  /* палитра графиков CYBERTECH */
+  --c1:#0e9e85; --c2:#ff00ad; --c3:#8400c0; --c4:#0e186f;
+}
+@media (prefers-color-scheme: light){
+  :root{ --bg:#ececfc; --panel:#ffffff; --panel2:#e4e4f4; --line:#d4d3e4; --text:#221f33;
+    --muted:#6e6c7c; --accent:#6956f6; --accent2:#159e6f; --warn:#c77b00; --neg:#d23b3b;
+    --chip:#e6e4f5; --chipA:#d7ccf3; --fill:#8c4af2; --fillH:#7d3ce6; --fillT:#7a3fd8; --gtext:#0e186f; }
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
+  font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.4}
+select,button,input,table,th,td{font-family:Arial,Helvetica,sans-serif}
+.app{display:flex;min-height:100vh;flex-wrap:wrap}
+.side{width:340px;flex:0 0 340px;background:var(--panel);border-right:1px solid var(--line);
+  padding:16px;overflow-y:auto;max-height:100vh;position:sticky;top:0}
+.main{flex:1 1 480px;padding:18px 22px;min-width:0}
+h1{font-size:17px;margin:0 0 2px}
+.sub{color:var(--muted);font-size:12px;margin-bottom:14px}
+.grp{margin:14px 0 6px;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--text);
+  font-weight:800;border-bottom:1px solid var(--line);padding-bottom:4px}
+.sl{margin:11px 0}
+.sl .lbl{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;margin-bottom:3px}
+.sl .lbl b{color:var(--text);font-weight:600}
+.sl .val{color:var(--accent2);font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
+input[type=range]{width:100%;accent-color:var(--accent);height:20px}
+select{width:100%;background:var(--panel2);color:var(--text);border:1px solid var(--line);
+  border-radius:8px;padding:7px 9px;font-size:13px}
+.seg{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.seg button{flex:1 1 auto;background:var(--fill);color:#fff;border:1px solid transparent;
+  border-radius:9px;padding:8px 10px;cursor:pointer;font-size:13px;font-weight:600;transition:.12s;opacity:.72}
+.seg button.on{background:var(--fillT);border-color:#fff3;color:#fff;opacity:1}
+.seg button:hover{opacity:1}
+.topbar{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;justify-content:space-between;margin-bottom:6px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:12px;margin:14px 0 20px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.card .k{color:var(--muted);font-size:11.5px;margin-bottom:4px}
+.card .v{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+.card .v.small{font-size:17px}
+.card .h{color:var(--muted);font-size:11px;margin-top:3px}
+.pos{color:var(--accent2)} .negv{color:var(--neg)}
+table{border-collapse:collapse;width:100%;font-size:12.5px;font-variant-numeric:tabular-nums}
+.tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+th,td{padding:6px 9px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:var(--panel);z-index:1}
+#cfTable thead td{background:var(--fill);color:#fff;font-weight:700;position:sticky;top:0}
+#cfTable thead td:first-child{background:var(--fill);color:#fff}
+#cfTable thead td.total{background:var(--fillT);color:#fff}
+tbody tr:hover td{background:var(--panel2)}
+tr.strong td{font-weight:700;background:var(--panel2)}
+tr.strong td:first-child{background:var(--panel2)}
+.note{color:var(--muted);font-size:12px;margin-top:14px;line-height:1.55}
+.badge{display:inline-block;background:var(--chip);border:1px solid var(--line);border-radius:20px;
+  padding:3px 10px;font-size:11.5px;color:var(--muted);margin:2px 4px 2px 0}
+.reset{margin-top:16px;width:100%;background:transparent;border:1px dashed var(--line);color:var(--muted);
+  border-radius:9px;padding:8px;cursor:pointer;font-size:12px}
+.reset:hover{border-color:var(--accent);color:var(--text)}
+.bar{height:8px;border-radius:5px;background:var(--panel2);overflow:hidden;margin-top:6px}
+.bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+h2{font-size:14px;margin:22px 0 8px;color:var(--accent)}
+.scname{font-size:12.5px;color:var(--warn);font-weight:600}
+.chartbox{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:6px 0 4px}
+.chart-h{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:6px}
+#chart{width:100%;overflow-x:auto}
+#chart svg{display:block;max-width:100%}
+.legend{display:flex;gap:16px;flex-wrap:wrap;color:var(--muted);font-size:12px;margin-top:6px}
+.legend span{display:flex;align-items:center;gap:6px}
+.lg{width:14px;height:10px;border-radius:3px;display:inline-block}
+.lg.pos{background:var(--c1)} .lg.neg{background:var(--c2)}
+.lg.line{height:0;border-top:2px solid var(--c3);width:16px}
+.xls{background:var(--chipA);color:var(--text);border:1px solid var(--accent);border-radius:9px;
+  padding:8px 14px;cursor:pointer;font-size:13px;font-weight:600}
+.xls:hover{filter:brightness(1.1)}
+.formhead{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin:22px 0 8px}
+.formseg{margin:0;max-width:420px}
+.formseg button{padding:6px 12px;font-size:12.5px}
+tr.hdr td{background:var(--panel2);color:var(--accent);font-weight:700;font-size:11.5px;
+  text-transform:uppercase;letter-spacing:.04em}
+tr.hdr td:first-child{background:var(--panel2)}
+tr.chk td{color:var(--muted);font-style:italic}
+#cfTable thead td{font-weight:700}
+/* итоговая строка секции (итоги наверху) */
+tr.sec td{background:var(--panel2);color:var(--accent);font-weight:700;font-size:11.5px;letter-spacing:.03em}
+tr.sec td:first-child{background:var(--panel2);color:var(--accent);text-transform:uppercase}
+/* акцентная итоговая строка (NOI, EBIT, ЧП, FCFE) — тёмно-синяя заливка */
+tr.blue td{background:var(--fill);color:#fff;font-weight:700}
+tr.blue td:first-child{background:var(--fill);color:#fff}
+tr.blue:hover td{background:var(--fillH)}
+/* колонка «Всего» — значения не выделяем жирным (наследуют вес строки) */
+tbody td.total{border-left:2px solid var(--accent);background:var(--panel2);font-weight:400}
+#cfTable thead td.total{font-weight:700;border-left:2px solid var(--accent)}
+tr.blue td.total{background:var(--fillT);color:#fff}
+tr.sec td.total{background:var(--panel2);color:var(--accent)}
+tr.strong td.total{background:var(--panel2)}
+.refbox{margin:-8px 0 6px;padding:9px 12px;background:var(--panel2);border:1px dashed var(--line);
+  border-radius:10px;font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center}
+.refbox b{color:var(--text)}
+.refbox .d{color:var(--warn)}
+.gtxt{fill:var(--gtext);font-size:10px;font-family:Arial,sans-serif;font-weight:600}
+.gval{fill:var(--gtext);font-size:9.5px;font-family:Arial,sans-serif;font-weight:700;font-variant-numeric:tabular-nums}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <h1>Параметры модели</h1>
+    <div class="sub">Склад Кировск · Г35 (УК) + ЗПИФ (собственник) · пересчёт в браузере</div>
+
+    <div class="grp">Сценарий</div>
+    <select id="scenario"></select>
+
+    <div id="sliders"></div>
+
+    <button class="reset" id="resetBtn">Сбросить к сценарию</button>
+    <div class="note" style="margin-top:12px">
+      Синие ползунки меняют «пользовательские» значения. Выбор сценария подставляет его набор
+      параметров. Базовый сценарий (Сц.4) сверён с Excel до рубля.
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <h1 style="font-size:19px">Интерактивная DCF-модель · <span id="viewName">Свод</span></h1>
+        <div class="scname" id="scLabel"></div>
+      </div>
+    </div>
+    <div class="seg" id="viewSeg">
+      <button data-v="svod" class="on">Свод (проект)</button>
+      <button data-v="g35">Г35</button>
+      <button data-v="zpif">ЗПИФ</button>
+      <button data-v="owner">Собственник</button>
+      <button data-v="compare">Сравнение</button>
+    </div>
+
+    <div class="cards" id="cards"></div>
+    <div id="refbox" class="refbox"></div>
+
+    <div class="chartbox">
+      <div class="chart-h">
+        <h2 style="margin:0" id="chartTitle">Денежный поток и накопленный итог</h2>
+        <button class="xls" id="xlsBtn">⭳ Выгрузить в Excel</button>
+      </div>
+      <div id="chart"></div>
+      <div class="legend" id="chartLegend"></div>
+    </div>
+
+    <div class="formhead">
+      <h2 id="tblTitle" style="margin:0">Формы отчётности</h2>
+      <div class="seg formseg" id="formSeg">
+        <button data-f="pl" class="on">ОПиУ (P&L)</button>
+        <button data-f="cf">ДДС (Cash Flow)</button>
+        <button data-f="bal">Баланс</button>
+      </div>
+    </div>
+    <div class="tblwrap"><table id="cfTable"></table></div>
+
+    <div class="note" id="footNote"></div>
+  </main>
+</div>
+
+<script>
+"use strict";
+/* ============================================================
+   ДВИЖОК МОДЕЛИ  (реконструкция логики книги Кировск)
+   ============================================================ */
+const YEARS = 10;
+
+// --- финансовые функции ---
+function pmt(rate,nper,pv){ if(nper<=0) return 0; if(rate===0) return -pv/nper;
+  return -pv*rate/(1-Math.pow(1+rate,-nper)); }
+function npv(rate,cf){ let s=0; for(let t=0;t<cf.length;t++) s+=cf[t]/Math.pow(1+rate,t); return s; }
+function irr(cf){
+  // защита: нужен хотя бы один знак+ и один знак-
+  let hasP=false,hasN=false; for(const x of cf){ if(x>1e-6)hasP=true; if(x<-1e-6)hasN=true; }
+  if(!(hasP&&hasN)) return NaN;
+  let lo=-0.9, hi=3.0, f=r=>npv(r,cf);
+  let flo=f(lo), fhi=f(hi);
+  if(flo*fhi>0){ // расширяем вверх
+    hi=10; fhi=f(hi); if(flo*fhi>0) return NaN;
+  }
+  for(let i=0;i<200;i++){ let m=(lo+hi)/2, fm=f(m);
+    if(Math.abs(fm)<1e-4) return m;
+    if(flo*fm<0){hi=m;fhi=fm;} else {lo=m;flo=fm;} }
+  return (lo+hi)/2;
+}
+function payback(cum){ // cum[0..10] кумулятивный поток, год0 отрицательный
+  for(let t=1;t<cum.length;t++){ if(cum[t]>=0){
+     const prev=cum[t-1], curFlow=cum[t]-cum[t-1];
+     if(curFlow===0) return t;
+     return (t-1)+Math.abs(prev)/curFlow;
+  }}
+  return NaN;
+}
+
+/* ---- основной расчёт ---- */
+function compute(p){
+  const nnp=p.nnp, ndfl=p.ndfl, vat=p.vat, pt=p.propTaxRate, disc=p.disc;
+  const H=Math.round(p.horizon), amort=p.amort, capRate=p.capRate, txn=p.txn;
+  const ownerG35 = (p.owner==="Г35");
+  const sale = ownerG35 && (p.transferForm==="продажа");
+  const loanIsBank = ownerG35 && (p.loanSrc==="банк"); // Сц.3: заём внешний (банк)
+  // Heff — год передачи здания в ЗПИФ. Для ЗПИФ-100% здание у ЗПИФ с года 0.
+  const Heff = ownerG35 ? H : 0;
+
+  const GLA = p.gba*p.glaPct;
+  const constrCost = p.gba*p.strM2;                 // стоимость стройки (амортизируемая база)
+  const CAPEX = (constrCost + p.comm + p.approve + p.other)*(1+p.reserve); // без НДС
+  const capexVat = CAPEX*(1+vat);                    // деньги на стройку (с НДС)
+  const vatRefund = CAPEX*vat;                       // возврат НДС (год1, лаг=1)
+  const ptBase = CAPEX;                              // база налога на имущество
+  const equityG35share = ownerG35 ? p.equityG35 : 0;
+  const icShare = ownerG35 ? (1-equityG35share) : 0; // доля займа (ЗПИФ или банк)
+  const g35Equity0 = ownerG35 ? capexVat*equityG35share : 0;   // equity Г35 в год 0
+  const P0 = ownerG35 ? capexVat*icShare : 0;        // тело займа (ЗПИФ→Г35 или банк→Г35)
+
+  // --- операционный ряд по годам (t=1..10) ---
+  const egi=[0], occA=[0], rentA=[0], noiOper=[0], mv=[0];
+  mv[0]=CAPEX;
+  for(let t=1;t<=YEARS;t++){
+    const rent=p.rate*Math.pow(1+p.indexation,t-1);
+    let occ=Math.min(p.occStab, p.occ1+(p.occStab-p.occ1)*(t-1)/Math.max(p.stabYear-1,1));
+    const e = GLA*rent*occ*12;
+    egi[t]=e; occA[t]=occ; rentA[t]=rent;
+    const opex=-e*p.opexPct;
+    const propTaxFull=-ptBase*pt;
+    noiOper[t]=e+opex+propTaxFull;                   // проектный NOI (без ВГО)
+    mv[t]=noiOper[t]/capRate*(1-txn);
+  }
+
+  // --- график займа ЗПИФ→Г35 (аннуитет; год0 только %) ---
+  const icInt=Array(YEARS+1).fill(0), icPrin=Array(YEARS+1).fill(0);
+  if(P0>0){
+    const grace=Math.max(0,Math.round(p.icGrace)-1);
+    const nPay=Math.max(1,Math.round(p.icTerm)-grace);
+    const ann=pmt(p.icRate,nPay,-P0);
+    let bal=P0;
+    for(let k=0;k<=YEARS;k++){
+      const interest=bal*p.icRate;
+      let principal = (k<=grace)?0:Math.max(0,Math.min(ann-interest,bal));
+      // year0 (k=0) — только проценты, тело не гасится
+      if(k<=grace) principal=0;
+      if(k>=1 && k<=YEARS){ icInt[k]=interest; icPrin[k]=principal; }
+      bal-=principal;
+      if(bal<1e-6) bal=0;
+    }
+  }
+
+  // --- P&L и CF по компаниям ---
+  const g={},z={};
+  ["egi","opex","propTax","noi","dep","ebit","interest","ebt","nnp","ni","divDecl","ndfl","divNet",
+   "vgoRentExp","cfop","cfopSelf"].forEach(k=>{g[k]=Array(YEARS+1).fill(0);z[k]=Array(YEARS+1).fill(0);});
+  z.intInc=Array(YEARS+1).fill(0); z.rentInc=Array(YEARS+1).fill(0); z.principalIn=Array(YEARS+1).fill(0);
+
+  // остаточная стоимость здания на год передачи (для продажи)
+  const bookAtH = CAPEX - (constrCost/amort)*Math.min(Heff,amort);
+  const saleProceeds = (sale && Heff>=1) ? mv[Heff] : 0; // выручка Г35 от продажи, нетто НДС (НДС ремитится)
+
+  for(let t=1;t<=YEARS;t++){
+    const e=egi[t], opex=-e*p.opexPct;
+    const preTransfer = t<=Heff;              // здание ещё на Г35 (для ЗПИФ-100% Heff=0 → всегда false)
+    /* --- Г35 (застройщик/оператор; при ЗПИФ-100% — только оператор в аренде) --- */
+    const propTaxG = preTransfer ? -ptBase*pt : 0;
+    const depG = preTransfer ? -constrCost/amort : 0;
+    let vgoRentExp=0, noiG;
+    if(preTransfer){ noiG=e+opex+propTaxG; }
+    else { vgoRentExp=-p.rentNorm*(e+opex); noiG=e+opex+vgoRentExp; }   // после передачи — аренда у ЗПИФ
+    const ebitG=noiG+depG;
+    const intG=icInt[t];                       // проценты по займу (щит по НнП; при банке уходят из группы)
+    let transferInc=0;
+    if(sale && t===Heff){ transferInc = mv[t] - bookAtH; }  // прирост при продаже здания
+    const ebtG=ebitG-intG+transferInc;
+    const nnpG = ebtG>0? -ebtG*nnp:0;
+    const niG=ebtG+nnpG;
+    const divDeclG=Math.max(0,niG*p.divRt);
+    const ndflG=-divDeclG*ndfl;
+    g.egi[t]=e; g.opex[t]=opex; g.propTax[t]=propTaxG; g.noi[t]=noiG; g.dep[t]=depG;
+    g.ebit[t]=ebitG; g.interest[t]=-intG; g.ebt[t]=ebtG; g.nnp[t]=nnpG; g.ni[t]=niG;
+    g.divDecl[t]=divDeclG; g.ndfl[t]=ndflG; g.divNet[t]=divDeclG+ndflG; g.vgoRentExp[t]=vgoRentExp;
+    g.cfopSelf[t]=noiG+nnpG+((t===1&&ownerG35)?vatRefund:0);   // операц. CF Г35 (возврат НДС — только застройщик)
+
+    /* --- ЗПИФ (держит займ / после передачи — здание) --- */
+    if(preTransfer){
+      const intInc = loanIsBank ? 0 : icInt[t];   // при банке ЗПИФ не получает проценты
+      z.intInc[t]=intInc; z.principalIn[t]= loanIsBank?0:icPrin[t];
+      z.ni[t]=intInc;
+      const divDeclZ=Math.max(0,intInc);
+      z.divDecl[t]=divDeclZ; z.ndfl[t]=-divDeclZ*ndfl; z.divNet[t]=divDeclZ-divDeclZ*ndfl;
+      z.noi[t]=0; z.propTax[t]=0;
+    } else {
+      const rentInc=p.rentNorm*(e+opex);
+      const propTaxZ=-ptBase*pt;
+      const noiZ=rentInc+propTaxZ;
+      z.rentInc[t]=rentInc; z.propTax[t]=propTaxZ; z.noi[t]=noiZ; z.ni[t]=noiZ;
+      const divDeclZ=Math.max(0,noiZ);
+      z.divDecl[t]=divDeclZ; z.ndfl[t]=-divDeclZ*ndfl; z.divNet[t]=divDeclZ-divDeclZ*ndfl;
+    }
+  }
+
+  // --- доинвестиции Г35 (покрытие кассового разрыва; при продаже выручка закрывает разрыв) ---
+  const g35Inject=Array(YEARS+1).fill(0);
+  if(ownerG35){
+    for(let t=1;t<=YEARS;t++){
+      const proceeds=(sale && t===Heff)? saleProceeds : 0;
+      const cash=g.cfopSelf[t]+proceeds-icInt[t]-icPrin[t]-g.divDecl[t];
+      g35Inject[t]=cash<0? -cash:0;
+    }
+  }
+  // накопленная касса ЗПИФ к году передачи (возвраты тела займа) — для покупки здания при продаже
+  let zpifCashAtH=0; if(!loanIsBank) for(let t=1;t<=Heff;t++) zpifCashAtH+=icPrin[t];
+  const zpifPurchase = (sale && Heff>=1) ? Math.max(0, mv[Heff]*(1+vat)-zpifCashAtH) : 0; // доп. пай в ЗПИФ на покупку
+
+  /* ============ СВОД (проект) ============ */
+  const svodCF=[], svodCFop=[0];
+  const nnpSvod=[0];
+  for(let t=1;t<=YEARS;t++){
+    const nn = g.nnp[t];                          // налог на прибыль Г35 (ЗПИФ НнП=0)
+    const bankInt = loanIsBank ? icInt[t] : 0;    // банковские % — реальный отток из группы
+    nnpSvod[t]=nn;
+    svodCFop[t]=egi[t]-egi[t]*p.opexPct - ptBase*pt + nn - bankInt + (t===1?vatRefund:0);
+  }
+  // ряд для IRR: год0 = −CAPEX с НДС; годы = CFop + ΔMV
+  const svodSeries=[-capexVat];
+  for(let t=1;t<=YEARS;t++) svodSeries[t]=svodCFop[t]+(mv[t]-mv[t-1]);
+  const svodCum=[]; svodCum[0]=svodSeries[0];
+  for(let t=1;t<=YEARS;t++) svodCum[t]=svodCum[t-1]+svodSeries[t];
+  const svodPV=[svodSeries[0]];
+  for(let t=1;t<=YEARS;t++) svodPV[t]=svodSeries[t]/Math.pow(1+disc,t);
+  const svodIRR=irr(svodSeries), svodNPV=svodPV.reduce((a,b)=>a+b,0), svodPB=payback(svodCum);
+
+  /* ============ СОБСТВЕННИК ============ */
+  const ownerInvest=Array(YEARS+1).fill(0);
+  const ownerDist=Array(YEARS+1).fill(0);   // распределения (без ΔMV)
+  const dMV=Array(YEARS+1).fill(0);
+  const ownerSeries=Array(YEARS+1).fill(0);
+  // год 0: ЗПИФ-100% → пай = CAPEX с НДС; Г35+ЗПИФ-заём → пай(заём)+equity; Г35+банк → только equity
+  ownerInvest[0] = ownerG35 ? -((loanIsBank?0:P0) + g35Equity0) : -capexVat;
+  for(let t=1;t<=YEARS;t++){
+    ownerInvest[t] = -g35Inject[t] - (t===Heff ? zpifPurchase : 0);
+    dMV[t]=mv[t]-mv[t-1];
+    ownerDist[t]=z.divNet[t]+z.principalIn[t]+g.divNet[t];
+    ownerSeries[t]=ownerInvest[t]+ownerDist[t]+dMV[t];
+  }
+  ownerSeries[0]=ownerInvest[0];
+  const ownerCum=[]; ownerCum[0]=ownerSeries[0];
+  for(let t=1;t<=YEARS;t++) ownerCum[t]=ownerCum[t-1]+ownerSeries[t];
+  const ownerIRR=irr(ownerSeries);
+  const ownerNPV=npv(disc,ownerSeries);
+  const investTotal=Math.abs(ownerInvest.reduce((a,b)=>a+b,0));
+  let distSum=0; for(let t=1;t<=YEARS;t++) distSum+=ownerDist[t]+dMV[t];
+  const moic= investTotal>0? distSum/investTotal : NaN;
+
+  // налоги
+  let sumProp=0,sumNnp=0,sumEgi=0,sumNdfl=0;
+  for(let t=1;t<=YEARS;t++){ sumProp+=ptBase*pt; sumNnp+=-(g.nnp[t]); sumEgi+=egi[t]; sumNdfl+= -(g.ndfl[t]) - (z.ndfl[t]); }
+  const vatPaidNet = sumEgi*vat - CAPEX*vat;                    // НДС нетто уплаченный (выходной − возмещение стройки)
+  const taxBizAccr = sumProp + sumNnp;                          // налоги бизнеса начисленные (имущество + прибыль)
+  const taxBizPaid = taxBizAccr + vatPaidNet;                   // + НДС нетто
+  const taxOwner = taxBizAccr + sumNdfl + vatPaidNet;           // все налоги группы (собственника)
+
+  /* ============ ПОЛНЫЕ ФОРМЫ: ОПиУ / ДДС / БАЛАНС ============ */
+  const dep = constrCost/amort;
+  const A=()=>Array(YEARS+1).fill(0);
+  const cum=(arr)=>{const c=A();let s=0;for(let t=0;t<=YEARS;t++){s+=arr[t]||0;c[t]=s;}return c;};
+  const loanBal=A(); loanBal[0]=P0;
+  for(let t=1;t<=YEARS;t++) loanBal[t]=Math.max(0,loanBal[t-1]-icPrin[t]);
+  const g35Builds=ownerG35, zpifBuilds=!ownerG35;
+
+  // ---------- Г35 ----------
+  const G={pl:{},cf:{},bal:{}};
+  G.pl={gla:A(),rate:A(),occ:A(),egi:g.egi,opex:g.opex,propTax:g.propTax,vgoRentExp:g.vgoRentExp,
+        noi:g.noi,dep:g.dep,ebit:g.ebit,intExp:g.interest,transferInc:A(),ebt:g.ebt,nnp:g.nnp,ni:g.ni,
+        divDecl:g.divDecl,ndfl:g.ndfl,divNet:g.divNet};
+  for(let t=1;t<=YEARS;t++){ G.pl.gla[t]=GLA; G.pl.rate[t]=rentA[t]; G.pl.occ[t]=occA[t];
+    if(sale&&t===Heff) G.pl.transferInc[t]=mv[t]-bookAtH; }
+  const gEgiGross=A(),gVgoGross=A(),gVat=A(),gCapex=A(),gTerm=A(),gEq=A(),gLoanR=A(),gCredR=A(),
+        gIntP=A(),gPrinP=A(),gDivP=A(),gCfOp=A(),gCfInv=A(),gCfFin=A(),gFcfe=A();
+  for(let t=0;t<=YEARS;t++){
+    gEgiGross[t]=g.egi[t]*(1+vat); gVgoGross[t]=g.vgoRentExp[t]*(1+vat);
+    gCfOp[t]=g.cfopSelf[t];
+    gVat[t]=gCfOp[t]-gEgiGross[t]-g.opex[t]-g.propTax[t]-gVgoGross[t]-g.nnp[t];
+    gCapex[t]=(t===0&&g35Builds)?-capexVat:0;
+    gTerm[t]=(sale&&t===Heff)?saleProceeds:0;
+    gCfInv[t]=gCapex[t]+gTerm[t];
+    gEq[t]=(t===0?g35Equity0:g35Inject[t]);
+    gLoanR[t]=(t===0&&g35Builds&&!loanIsBank)?P0:0;
+    gCredR[t]=(t===0&&g35Builds&&loanIsBank)?P0:0;
+    gIntP[t]=-icInt[t]; gPrinP[t]=-icPrin[t]; gDivP[t]=-g.divDecl[t];
+    gCfFin[t]=gEq[t]+gLoanR[t]+gCredR[t]+gIntP[t]+gPrinP[t]+gDivP[t];
+    gFcfe[t]=gCfOp[t]+gCfInv[t]+gCfFin[t];
+  }
+  const gCash=cum(gFcfe);
+  G.cf={cfOp:gCfOp,egiGross:gEgiGross,opex:g.opex,propTax:g.propTax,vat:gVat,vgoRentExp:gVgoGross,nnp:g.nnp,
+        cfInv:gCfInv,capex:gCapex,terminal:gTerm,cfFin:gCfFin,equity:gEq,loanRecv:gLoanR,creditRecv:gCredR,
+        intPay:gIntP,prinPay:gPrinP,div:gDivP,fcfe:gFcfe,cumCash:gCash};
+  const gBld=A(),gPai=A(),gVatR=A(),gCapC=A(),gReval=A(),gRet=A(),gDivC=A(),gAssets=A(),gEqT=A(),gLiab=A(),gChk=A();
+  { let ca=0,ra=0,da=0;
+    for(let t=0;t<=YEARS;t++){
+      gBld[t]= g35Builds ? (t<Heff? CAPEX-dep*t : 0) : 0;
+      gPai[t]= (g35Builds && !sale && Heff>=1 && t>=Heff) ? mv[Heff] : 0;
+      gReval[t]=(g35Builds && !sale && Heff>=1 && t>=Heff) ? (mv[Heff]-bookAtH) : 0;
+      gVatR[t]= (g35Builds && t===0) ? CAPEX*vat : 0;
+      ca+=gEq[t]; ra+=g.ni[t]; da+=-g.divDecl[t];
+      gCapC[t]=ca; gRet[t]=ra; gDivC[t]=da;
+      gAssets[t]=gBld[t]+gPai[t]+gVatR[t]+gCash[t];
+      gEqT[t]=gCapC[t]+gReval[t]+gRet[t]+gDivC[t];
+      gLiab[t]= g35Builds ? loanBal[t] : 0;
+      gChk[t]=gAssets[t]-gEqT[t]-gLiab[t];
+    } }
+  G.bal={bld:gBld,pai:gPai,vatRef:gVatR,cash:gCash,assets:gAssets,
+         capital:gCapC,reval:gReval,retained:gRet,divAccum:gDivC,equityTot:gEqT,loanLiab:gLiab,check:gChk};
+
+  // ---------- ЗПИФ ----------
+  const Z={pl:{},cf:{},bal:{}};
+  Z.pl={intInc:z.intInc,rentInc:z.rentInc,propTax:z.propTax,noi:z.noi,ni:z.ni,
+        divDecl:z.divDecl,ndfl:z.ndfl,divNet:z.divNet};
+  const zIntR=A(),zPrinR=A(),zRentCF=A(),zDivP=A(),zPaiIn=A(),zLoanIssue=A(),zCapexZ=A(),zBuyBld=A(),
+        zVatRefCF=A(),zCfOp=A(),zCfInv=A(),zCfFin=A(),zFcfe=A();
+  for(let t=0;t<=YEARS;t++){
+    zRentCF[t]=z.noi[t];                                   // операц. CF ЗПИФ = аренда NOI (после передачи)
+    zVatRefCF[t]=((zpifBuilds && t===1)?vatRefund:0)+((sale && t===Heff+1)?mv[Heff]*vat:0); // возврат НДС
+    zCfOp[t]=zRentCF[t]+zVatRefCF[t];
+    zCapexZ[t]=(t===0&&zpifBuilds)?-capexVat:0;
+    zBuyBld[t]=(sale&&t===Heff)?-(mv[Heff]*(1+vat)):0;     // покупка здания у Г35 (продажа)
+    zLoanIssue[t]=(t===0&&!zpifBuilds&&!loanIsBank)?-P0:0; // выдача займа Г35
+    zCfInv[t]=zCapexZ[t]+zBuyBld[t]+zLoanIssue[t];
+    zPaiIn[t]=(t===0?(zpifBuilds?capexVat:(loanIsBank?0:P0)):0)+((sale&&t===Heff)?zpifPurchase:0);
+    zIntR[t]=z.intInc[t]; zPrinR[t]=z.principalIn[t]; zDivP[t]=-z.divDecl[t];
+    zCfFin[t]=zPaiIn[t]+zIntR[t]+zPrinR[t]+zDivP[t];
+    zFcfe[t]=zCfOp[t]+zCfInv[t]+zCfFin[t];
+  }
+  const zCash=cum(zFcfe);
+  Z.cf={cfOp:zCfOp,rent:zRentCF,vatRef:zVatRefCF,cfInv:zCfInv,capex:zCapexZ,buyBld:zBuyBld,loanIssue:zLoanIssue,
+        cfFin:zCfFin,paiIn:zPaiIn,intRecv:zIntR,prinRecv:zPrinR,div:zDivP,fcfe:zFcfe,cumCash:zCash};
+  const zBld=A(),zLoanAsset=A(),zVatR=A(),zPaiC=A(),zRet=A(),zDivC=A(),zAssets=A(),zEqT=A(),zChk=A();
+  { let pa=0,ra=0,da=0;
+    for(let t=0;t<=YEARS;t++){
+      if(zpifBuilds) zBld[t]=CAPEX;                                  // ЗПИФ-застройщик — по себестоимости
+      else zBld[t]=(Heff>=1 && t>=Heff)? mv[Heff] : 0;               // здание получено/куплено в год передачи
+      zLoanAsset[t]=(!zpifBuilds && !loanIsBank)? loanBal[t] : 0;
+      zVatR[t]=(zpifBuilds && t===0)? CAPEX*vat : (sale && t===Heff ? mv[Heff]*vat : 0);
+      // взнос здания как пай (при форме «пай», неденежный)
+      const paiContribBld = (!zpifBuilds && !sale && Heff>=1 && t===Heff) ? mv[Heff] : 0;
+      pa+=zPaiIn[t]+paiContribBld; ra+=z.ni[t]; da+=-z.divDecl[t];
+      zPaiC[t]=pa; zRet[t]=ra; zDivC[t]=da;
+      zAssets[t]=zBld[t]+zLoanAsset[t]+zVatR[t]+zCash[t];
+      zEqT[t]=zPaiC[t]+zRet[t]+zDivC[t];
+      zChk[t]=zAssets[t]-zEqT[t];
+    } }
+  Z.bal={bld:zBld,loanAsset:zLoanAsset,vatRef:zVatR,cash:zCash,assets:zAssets,
+         capital:zPaiC,retained:zRet,divAccum:zDivC,equityTot:zEqT,check:zChk};
+
+  // ---------- СВОД (консолидация) ----------
+  const SV={pl:{},cf:{},bal:{}};
+  const sum2=(a,b)=>{const c=A();for(let t=0;t<=YEARS;t++)c[t]=(a[t]||0)+(b[t]||0);return c;};
+  const svExtInt = loanIsBank? g.interest : A();   // проценты в своде — только внешние (банк); ВГО элиминируются
+  SV.pl={egi:g.egi,opex:g.opex,propTax:sum2(g.propTax,z.propTax),
+         noi:sum2(g.noi,z.noi),dep:g.dep,ebit:sum2(g.ebit,z.noi),extInt:svExtInt,
+         transferInc:G.pl.transferInc,ebt:sum2(g.ebit,z.noi).map((v,i)=>v+svExtInt[i]+(G.pl.transferInc[i]||0)),
+         nnp:g.nnp,ni:sum2(g.ni,z.ni),
+         divDecl:sum2(g.divDecl,z.divDecl),ndfl:sum2(g.ndfl,z.ndfl),divNet:sum2(g.divNet,z.divNet)};
+  const svFcfe=sum2(gFcfe,zFcfe), svCash=cum(svFcfe);
+  // операц. CF свода — консолидация: ВГО аренда элиминируется, НДС как балансирующая строка
+  const svCfOp=sum2(gCfOp,zCfOp), svEgiGross=A(), svPropTaxT=sum2(g.propTax,z.propTax), svVat=A();
+  for(let t=0;t<=YEARS;t++){ svEgiGross[t]=g.egi[t]*(1+vat);
+    svVat[t]=svCfOp[t]-svEgiGross[t]-g.opex[t]-svPropTaxT[t]-g.nnp[t]; }
+  SV.cf={cfOp:svCfOp,cfInv:sum2(gCfInv,zCfInv),cfFin:sum2(gCfFin,zCfFin),
+         egiGross:svEgiGross,opex:g.opex,propTax:svPropTaxT,vat:svVat,nnp:g.nnp,
+         capex:sum2(gCapex,zCapexZ),intPay:gIntP,prinPay:gPrinP,div:sum2(gDivP,zDivP),fcfe:svFcfe,cumCash:svCash};
+  const svBld=A(),svVatR=A(),svAssets=A(),svPaid=A(),svReval=gReval,svRet=A(),svDivC=A(),svEqT=A(),svLiab=A(),svChk=A();
+  { let paid=0;
+    for(let t=0;t<=YEARS;t++){
+      svBld[t]= (t<Heff? CAPEX-dep*t : mv[Heff]);
+      svVatR[t]= (t===0? CAPEX*vat : (sale && t===Heff ? mv[Heff]*vat : 0));
+      paid+=-ownerInvest[t];                          // внешние вложения собственника
+      svPaid[t]=paid;
+      svRet[t]=(t===0?0:svRet[t-1])+ (SV.pl.ni[t]||0);
+      svDivC[t]=(t===0?0:svDivC[t-1]) - (SV.pl.divDecl[t]||0);
+      svAssets[t]=svBld[t]+svVatR[t]+svCash[t];
+      svLiab[t]= loanIsBank? loanBal[t] : 0;
+      svEqT[t]=svPaid[t]+svReval[t]+svRet[t]+svDivC[t];
+      svChk[t]=svAssets[t]-svEqT[t]-svLiab[t];
+    } }
+  SV.bal={bld:svBld,vatRef:svVatR,cash:svCash,assets:svAssets,
+          capital:svPaid,reval:svReval,retained:svRet,divAccum:svDivC,equityTot:svEqT,loanLiab:svLiab,check:svChk};
+  // маржа и доходность капитала (по годам)
+  const svNoiMargin=A(),svNetMargin=A(),svRoe=A(),svRoic=A();
+  for(let t=1;t<=YEARS;t++){
+    svNoiMargin[t]= SV.pl.egi[t]>0? SV.pl.noi[t]/SV.pl.egi[t] : 0;
+    svNetMargin[t]= SV.pl.egi[t]>0? SV.pl.ni[t]/SV.pl.egi[t] : 0;
+    const eq=SV.bal.equityTot[t]||0, ic=eq+(SV.bal.loanLiab[t]||0);
+    svRoe[t]= eq!==0? SV.pl.ni[t]/eq : 0;
+    svRoic[t]= ic!==0? SV.pl.ebit[t]*(1-nnp)/ic : 0;
+  }
+  SV.pl.noiMargin=svNoiMargin; SV.pl.netMargin=svNetMargin;
+  SV.roe=svRoe; SV.roic=svRoic; SV.noi=SV.pl.noi; SV.ni=SV.pl.ni;
+
+  const fin={g35:G,zpif:Z,svod:SV};
+
+  return {
+    meta:{GLA,constrCost,CAPEX,capexVat,vatRefund,P0,g35Equity0,H:Heff,ownerG35,sale,loanIsBank},
+    egi,occA,rentA,noiOper,mv,g,z,g35Inject,fin,
+    svod:{series:svodSeries,cfop:svodCFop,cum:svodCum,pv:svodPV,irr:svodIRR,npv:svodNPV,pb:svodPB,nnp:nnpSvod,
+          taxBizAccr,taxBizPaid},
+    owner:{invest:ownerInvest,dist:ownerDist,dMV,series:ownerSeries,cum:ownerCum,irr:ownerIRR,npv:ownerNPV,
+           moic,investTotal,taxGroup:taxOwner}
+  };
+}
+
+/* ============================================================
+   ПАРАМЕТРЫ И СЦЕНАРИИ
+   ============================================================ */
+// определения ползунков: key,label,unit,min,max,step,scale(%→доля)
+const SLIDERS=[
+ {g:"Площадь и стройка"},
+ {k:"gba",     l:"Общая площадь застройки (GBA)", u:"кв.м", min:500,max:5000,step:1},
+ {k:"strM2",   l:"Стоимость строительства",       u:"₽/кв.м", min:15000,max:60000,step:500},
+ {g:"Аренда"},
+ {k:"rate",    l:"Базовая арендная ставка",        u:"₽/кв.м/мес", min:300,max:1500,step:10},
+ {k:"indexation",l:"Индексация аренды",            u:"%/год", min:0,max:0.2,step:0.005,pct:1},
+ {k:"occ1",    l:"Заполняемость в год ввода",      u:"%", min:0.2,max:1,step:0.01,pct:1},
+ {k:"occStab", l:"Заполняемость при стабилизации", u:"%", min:0.5,max:1,step:0.01,pct:1},
+ {k:"stabYear",l:"Год выхода на стабилизацию",     u:"лет от ввода", min:1,max:5,step:1},
+ {k:"opexPct", l:"Операционные расходы (% от EGI)", u:"%", min:0.05,max:0.4,step:0.01,pct:1},
+ {g:"Финансирование"},
+ {k:"owner",   l:"Первоначальное владение",        u:"", choices:["Г35","ЗПИФ"]},
+ {k:"equityG35",l:"Доля собственного капитала Г35", u:"%", min:0,max:1,step:0.05,pct:1},
+ {k:"icRate",  l:"Ставка по займу ЗПИФ",           u:"%/год", min:0.08,max:0.28,step:0.005,pct:1},
+ {k:"icTerm",  l:"Срок займа ЗПИФ",                u:"лет", min:1,max:10,step:1},
+ {k:"loanSrc", l:"Источник займа",                 u:"", choices:["ЗПИФ","банк"]},
+ {g:"Выход / передача"},
+ {k:"horizon", l:"Передача владения Г35→ЗПИФ",     u:"лет", min:3,max:10,step:1},
+ {k:"transferForm",l:"Форма передачи",             u:"", choices:["пай","продажа"]},
+ {k:"capRate", l:"Cap Rate на выходе",             u:"%", min:0.08,max:0.2,step:0.005,pct:1},
+ {g:"Ставки и распределение"},
+ {k:"disc",    l:"Ставка дисконтирования (hurdle)", u:"%/год", min:0.05,max:0.3,step:0.0025,pct:1},
+ {k:"divRt",   l:"Норма дивидендов Г35→собственник", u:"% от ЧП", min:0,max:1,step:0.05,pct:1},
+ {k:"rentNorm",l:"Норма аренды Г35→ЗПИФ",          u:"% от NOI", min:0.5,max:1,step:0.01,pct:1},
+];
+
+// постоянные (не в ползунках) параметры
+const CONST_P={ glaPct:0.95, comm:2000000, approve:2000000, other:1500000, reserve:0.02,
+  amort:30, txn:0.03, nnp:0.25, ndfl:0.15, vat:0.22, propTaxRate:0.022, icGrace:1, loanSrc:"ЗПИФ" };
+
+// наборы сценариев (столбцы E–K книги = сценарии 1–7)
+const SCEN=[
+ {name:"Сц.1: Г35+ЗПИФ заём, продажа", p:{glaPct:.95,strM2:30000,rate:700,indexation:.07,occ1:.6,occStab:.95,stabYear:1,opexPct:.20,owner:"Г35",equityG35:.30,icRate:.175,icTerm:5,horizon:7,transferForm:"продажа",capRate:.13,disc:.150375,divRt:.90,rentNorm:.95,ndfl:.15,gba:1746}},
+ {name:"Сц.2: ЗПИФ 100%", p:{glaPct:.95,strM2:30000,rate:700,indexation:.07,occ1:.6,occStab:.95,stabYear:1,opexPct:.20,owner:"ЗПИФ",equityG35:0,icRate:.175,icTerm:5,horizon:7,transferForm:"пай",capRate:.13,disc:.13125,divRt:.90,rentNorm:.95,ndfl:.15,gba:1746}},
+ {name:"Сц.3: Г35+банк.кредит, продажа", p:{glaPct:.95,strM2:30000,rate:700,indexation:.07,occ1:.6,occStab:.95,stabYear:1,opexPct:.20,owner:"Г35",equityG35:.30,icRate:.175,icTerm:5,horizon:7,transferForm:"продажа",capRate:.13,disc:.150375,divRt:.90,rentNorm:.95,ndfl:.15,gba:1746,loanSrc:"банк"}},
+ {name:"Сц.4: Г35+ЗПИФ заём, в счёт пая", p:{glaPct:.95,strM2:30000,rate:700,indexation:.07,occ1:.6,occStab:.95,stabYear:1,opexPct:.20,owner:"Г35",equityG35:.30,icRate:.175,icTerm:5,horizon:7,transferForm:"пай",capRate:.13,disc:.150375,divRt:.90,rentNorm:.95,ndfl:.15,gba:1746}},
+ {name:"Сц.5: Оптимист. ЗПИФ 100%", p:{glaPct:.97,strM2:25000,rate:700,indexation:.10,occ1:.75,occStab:.95,stabYear:1,opexPct:.18,owner:"ЗПИФ",equityG35:0,icRate:.15,icTerm:7,horizon:7,transferForm:"пай",capRate:.12,disc:.1125,divRt:.90,rentNorm:.95,ndfl:.15,gba:1746}},
+ {name:"Сц.6: Консерват. ЗПИФ 100%", p:{glaPct:.92,strM2:35000,rate:700,indexation:.05,occ1:.5,occStab:.85,stabYear:1,opexPct:.21,owner:"ЗПИФ",equityG35:0,icRate:.16,icTerm:5,horizon:7,transferForm:"пай",capRate:.14,disc:.12,divRt:.90,rentNorm:.95,ndfl:.13,gba:1746}},
+ {name:"Сц.7: Стресс-тест ЗПИФ 100%", p:{glaPct:.90,strM2:35000,rate:700,indexation:.03,occ1:.4,occStab:.80,stabYear:2,opexPct:.21,owner:"ЗПИФ",equityG35:0,icRate:.19,icTerm:3,horizon:7,transferForm:"пай",capRate:.15,disc:.1425,divRt:.90,rentNorm:.95,ndfl:.13,gba:1746}},
+];
+
+// контрольные значения из книги (лист Дашборд/СРАВНЕНИЕ) — для сверки
+const BOOK=[
+ {si:.21321, sn:19409312, oi:.13991, on:-2766394, m:1.342},
+ {si:.24406, sn:30729917, oi:.18124, on:10655852, m:2.562},
+ {si:.14537, sn:-1690597, oi:-.04390, on:-21481293, m:0.944},
+ {si:.23245, sn:26403885, oi:.19738, on:14790436, m:2.042},
+ {si:.49232, sn:122505347, oi:.40360, on:99539384, m:4.735},
+ {si:.07187, sn:-19187807, oi:.02677, on:-39099798, m:1.212},
+ {si:-.00072, sn:-50341833, oi:-.04240, on:-68239858, m:0.693},
+];
+
+/* ============================================================
+   СОСТОЯНИЕ И UI
+   ============================================================ */
+let state={};      // текущие параметры
+let curScen=3;     // Сц.4 по умолчанию (индекс 3)
+let curView="svod";
+let curForm="pl";
+
+function loadScenario(i){
+  curScen=i;
+  state=Object.assign({}, CONST_P, JSON.parse(JSON.stringify(SCEN[i].p)));
+  buildSliders(); render();
+}
+function fmtVal(sl,v){
+  if(sl.choices) return v;
+  if(sl.pct) return (v*100).toFixed( sl.step<0.005?2:(sl.step<0.05?1:0) )+"%";
+  if(sl.k==="gba") return Math.round(v).toLocaleString("ru-RU")+" м²";
+  if(sl.k==="strM2"||sl.k==="rate") return Math.round(v).toLocaleString("ru-RU");
+  return v;
+}
+function buildSliders(){
+  const box=document.getElementById("sliders"); box.innerHTML="";
+  SLIDERS.forEach(sl=>{
+    if(sl.g){ const d=document.createElement("div"); d.className="grp"; d.textContent=sl.g; box.appendChild(d); return; }
+    const wrap=document.createElement("div"); wrap.className="sl";
+    if(sl.choices){
+      wrap.innerHTML=`<div class="lbl"><b>${sl.l}</b></div>`;
+      const sel=document.createElement("select"); sel.id="inp_"+sl.k;
+      sl.choices.forEach(c=>{const o=document.createElement("option");o.value=c;o.textContent=c;if(state[sl.k]===c)o.selected=true;sel.appendChild(o);});
+      sel.onchange=()=>{ state[sl.k]=sel.value; render(); buildSliders(); };
+      wrap.appendChild(sel);
+    } else {
+      wrap.innerHTML=`<div class="lbl"><b>${sl.l}</b><span class="val" id="v_${sl.k}">${fmtVal(sl,state[sl.k])}</span></div>`;
+      const inp=document.createElement("input"); inp.type="range"; inp.id="inp_"+sl.k;
+      inp.min=sl.min;inp.max=sl.max;inp.step=sl.step;inp.value=state[sl.k];
+      inp.oninput=()=>{ state[sl.k]=parseFloat(inp.value);
+        document.getElementById("v_"+sl.k).textContent=fmtVal(sl,state[sl.k]); render(); };
+      wrap.appendChild(inp);
+    }
+    box.appendChild(wrap);
+  });
+  // блокируем нерелевантные ползунки при ЗПИФ-100%
+  const zp = state.owner==="ЗПИФ";
+  ["equityG35","icRate","icTerm","loanSrc","transferForm","rentNorm"].forEach(k=>{
+    const inp=document.getElementById("inp_"+k);
+    if(inp){ inp.disabled=zp; inp.style.opacity=zp?0.4:1; }
+  });
+}
+
+const M=v=> (v/1e6).toLocaleString("ru-RU",{minimumFractionDigits:2,maximumFractionDigits:2});
+const TH=v=> (v===undefined||v===null||v===""||(typeof v==="number"&&isNaN(v)))?"" :
+  (v/1e3).toLocaleString("ru-RU",{minimumFractionDigits:0,maximumFractionDigits:0}); // тыс. ₽
+const PCT=v=> isNaN(v)?"н/д":(v*100).toFixed(1)+"%";
+const NUM=v=> isNaN(v)?"н/д":v.toFixed(2);
+
+function render(){
+  const r=compute(state);
+  const isCmp = curView==="compare";
+  document.getElementById("scLabel").textContent = isCmp? "Сравнение 7 сценариев" : SCEN[curScen].name;
+  document.getElementById("viewName").textContent=
+    {svod:"Свод (проект)",g35:"Г35",zpif:"ЗПИФ",owner:"Собственник",compare:"Сравнение"}[curView];
+  document.querySelector(".chartbox").style.display = isCmp?"none":"";
+  document.getElementById("cards").style.display = isCmp?"none":"";
+  document.getElementById("refbox").style.display = isCmp?"none":"";
+  document.getElementById("formSeg").style.display = (isCmp||curView==="owner")?"none":"";
+  if(isCmp){ renderCompare(); document.getElementById("footNote").innerHTML=
+    `<div style="color:var(--muted)">Сравнение всех 7 сценариев (пресеты из книги). Значения рассчитаны движком калькулятора; сверены с листом СРАВНЕНИЕ.</div>`; return; }
+  renderCards(r); renderRef(r); renderChart(r); renderTable(r); renderFoot(r);
+  window.__r=r; // для экспорта
+}
+function renderCompare(){
+  const all=SCEN.map((sc,i)=>({name:"Сц."+(i+1), r:compute(Object.assign({},CONST_P,JSON.parse(JSON.stringify(sc.p))))}));
+  document.getElementById("tblTitle").textContent="Сравнение сценариев";
+  const pctf=v=>isNaN(v)?"н/д":(v*100).toFixed(1)+"%", numf=v=>isNaN(v)?"н/д":v.toFixed(2), thf=v=>TH(v);
+  let b="<thead><tr><td>Показатель</td>"; all.forEach(a=>b+=`<td>${a.name}</td>`); b+="</tr></thead><tbody>";
+  const secR=t=>`<tr class="sec"><td>${t}</td>${"<td></td>".repeat(all.length)}</tr>`;
+  const rowC=(label,fn,fmt,cls)=>{ let h=`<tr class="${cls||''}"><td>${label}</td>`;
+    all.forEach(a=>{ const v=fn(a.r); const best=false; h+=`<td>${fmt(v)}</td>`; }); return h+"</tr>"; };
+  b+=secR("Показатели эффективности общие");
+  b+=rowC("IRR проекта",r=>r.svod.irr,pctf,"blue");
+  b+=rowC("NPV проекта, тыс ₽",r=>r.svod.npv,thf);
+  b+=rowC("Период окупаемости, лет",r=>r.svod.pb,numf);
+  b+=rowC("Налоги бизнеса начисленные, тыс ₽",r=>r.svod.taxBizAccr,thf);
+  b+=rowC("Налоги бизнеса уплаченные нетто, тыс ₽",r=>r.svod.taxBizPaid,thf);
+  b+=secR("Показатели эффективности собственника");
+  b+=rowC("IRR собственника",r=>r.owner.irr,pctf,"blue");
+  b+=rowC("NPV собственника, тыс ₽",r=>r.owner.npv,thf);
+  b+=rowC("MOIC",r=>r.owner.moic,numf);
+  b+=rowC("Налоги собственника всего, тыс ₽",r=>r.owner.taxGroup,thf);
+  document.getElementById("cfTable").innerHTML=b+"</tbody>";
+}
+
+function renderRef(r){
+  const bk=BOOK[curScen];
+  const isOwner=(curView==="owner");
+  const liveIRR=isOwner?r.owner.irr:r.svod.irr;
+  const bookIRR=isOwner?bk.oi:bk.si;
+  const liveNPV=isOwner?r.owner.npv:r.svod.npv;
+  const bookNPV=isOwner?bk.on:bk.sn;
+  const dIRR=(liveIRR-bookIRR)*100;
+  let h=`<span>Контроль по книге (Excel):</span>`+
+    `<span>IRR <b>${PCT(bookIRR)}</b></span>`+
+    `<span>NPV <b>${M(bookNPV)}</b> млн</span>`;
+  if(isOwner) h+=`<span>MOIC <b>${NUM(bk.m)}</b></span>`;
+  h+=`<span class="d">Δ IRR к книге: ${dIRR>=0?'+':''}${dIRR.toFixed(1)} п.п.</span>`;
+  if(Math.abs(dIRR)<0.3) h+=`<span style="color:var(--accent2)">✓ совпадает</span>`;
+  document.getElementById("refbox").innerHTML=h;
+}
+
+/* поток и накопленный итог для текущей вкладки */
+function viewFlow(r){
+  const flow=Array(YEARS+1).fill(0);
+  if(curView==="svod"){ for(let t=0;t<=YEARS;t++) flow[t]=r.svod.series[t]; }
+  else if(curView==="owner"){ for(let t=0;t<=YEARS;t++) flow[t]=r.owner.series[t]; }
+  else if(curView==="g35"){
+    flow[0]=-r.meta.g35Equity0;
+    for(let t=1;t<=YEARS;t++) flow[t]=r.g.divNet[t]-r.g35Inject[t];
+  } else {
+    flow[0]=-r.meta.P0;
+    for(let t=1;t<=YEARS;t++) flow[t]=r.z.divNet[t]+r.z.principalIn[t];
+  }
+  const cum=[flow[0]]; for(let t=1;t<=YEARS;t++) cum[t]=cum[t-1]+flow[t];
+  return {flow,cum};
+}
+
+function chartConfig(r){
+  if(curView==="owner"){ const {flow,cum}=viewFlow(r);
+    return {kind:"flowcum",title:"Совокупный CF и накопленный итог, млн ₽",flow,cum}; }
+  if(curForm==="cf"){ const {flow,cum}=viewFlow(r);
+    return {kind:"flowcum",title:"Денежный поток и накопленный итог, млн ₽",flow,cum}; }
+  const F=r.fin[curView];
+  if(curForm==="pl") return {kind:"bars2",title:"NOI и чистая прибыль по годам, млн ₽",
+    a:{name:"NOI",arr:F.pl.noi,col:"var(--c1)"},b:{name:"Чистая прибыль",arr:F.pl.ni,col:"var(--c2)"}};
+  return {kind:"lines2",pct:true,title:"ROE и ROIC по годам, %",
+    a:{name:"ROE",arr:r.fin.svod.roe,col:"var(--c2)"},b:{name:"ROIC",arr:r.fin.svod.roic,col:"var(--c1)"}};
+}
+function renderChart(r){
+  const cfg=chartConfig(r);
+  document.getElementById("chartTitle").textContent=cfg.title;
+  const W=760,H=260,padL=50,padR=30,padT=16,padB=26, iw=W-padL-padR, ih=H-padT-padB, bw=iw/(YEARS+1);
+  let vals=[0];
+  if(cfg.kind==="flowcum"){ for(let t=0;t<=YEARS;t++) vals.push(cfg.flow[t],cfg.cum[t]); }
+  else { for(let t=1;t<=YEARS;t++) vals.push(cfg.a.arr[t]||0,cfg.b.arr[t]||0); }
+  let maxV=Math.max(...vals), minV=Math.min(...vals); if(maxV===minV) maxV=minV+1;
+  const pad=(maxV-minV)*0.1||1; maxV+=pad; minV-=pad;
+  const y=v=>padT+ih*(maxV-v)/(maxV-minV), y0=y(0);
+  const fmtA=v=> cfg.pct? Math.round(v*100)+"%" : (v/1e6).toFixed(0);
+  let s=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}">`;
+  s+=`<line x1="${padL}" y1="${y0.toFixed(1)}" x2="${W-padR}" y2="${y0.toFixed(1)}" stroke="var(--line)" stroke-width="1"/>`;
+  for(let k=0;k<=4;k++){ const v=minV+(maxV-minV)*k/4; s+=`<text class="gtxt" x="${padL-6}" y="${(y(v)+3).toFixed(1)}" text-anchor="end">${fmtA(v)}</text>`; }
+  const startT = cfg.kind==="flowcum"?0:1;
+  for(let t=startT;t<=YEARS;t++){ const cx=padL+bw*t+bw*0.5;
+    s+=`<text class="gtxt" x="${cx.toFixed(1)}" y="${(H-8).toFixed(1)}" text-anchor="middle">${t}</text>`; }
+  if(cfg.kind==="flowcum"){
+    for(let t=0;t<=YEARS;t++){ const cx=padL+bw*t+bw*0.5, v=cfg.flow[t]/1e6;
+      const top=Math.min(y(cfg.flow[t]),y0), h=Math.abs(y(cfg.flow[t])-y0);
+      s+=`<rect x="${(cx-bw*0.32).toFixed(1)}" y="${top.toFixed(1)}" width="${(bw*0.64).toFixed(1)}" height="${Math.max(h,0.5).toFixed(1)}" rx="2" fill="${cfg.flow[t]>=0?'var(--c1)':'var(--c2)'}" opacity="0.9"/>`;
+      if(Math.abs(v)>=0.5) s+=`<text class="gval" x="${cx.toFixed(1)}" y="${(cfg.flow[t]>=0?top-3:top+h+9).toFixed(1)}" text-anchor="middle">${v.toFixed(0)}</text>`; }
+    let pts=""; for(let t=0;t<=YEARS;t++){ const cx=padL+bw*t+bw*0.5; pts+=`${cx.toFixed(1)},${y(cfg.cum[t]).toFixed(1)} `; }
+    s+=`<polyline points="${pts.trim()}" fill="none" stroke="var(--c3)" stroke-width="2.4"/>`;
+    for(let t=0;t<=YEARS;t++){ const cx=padL+bw*t+bw*0.5; s+=`<circle cx="${cx.toFixed(1)}" cy="${y(cfg.cum[t]).toFixed(1)}" r="2.6" fill="var(--c3)"/>`; }
+  } else if(cfg.kind==="bars2"){
+    for(let t=1;t<=YEARS;t++){ const cx=padL+bw*t+bw*0.5;
+      [[cfg.a,-1],[cfg.b,1]].forEach(([se,side])=>{ const v=se.arr[t]||0, top=Math.min(y(v),y0), h=Math.abs(y(v)-y0);
+        const x=side<0? cx-bw*0.34 : cx+0.02*bw;
+        s+=`<rect x="${x.toFixed(1)}" y="${top.toFixed(1)}" width="${(bw*0.32).toFixed(1)}" height="${Math.max(h,0.5).toFixed(1)}" rx="2" fill="${se.col}" opacity="0.88"/>`; }); }
+  } else { // lines2
+    [cfg.a,cfg.b].forEach(se=>{ let pts=""; for(let t=1;t<=YEARS;t++){ const cx=padL+bw*t+bw*0.5; pts+=`${cx.toFixed(1)},${y(se.arr[t]||0).toFixed(1)} `; }
+      s+=`<polyline points="${pts.trim()}" fill="none" stroke="${se.col}" stroke-width="2.4"/>`;
+      for(let t=1;t<=YEARS;t++){ const cx=padL+bw*t+bw*0.5; s+=`<circle cx="${cx.toFixed(1)}" cy="${y(se.arr[t]||0).toFixed(1)}" r="2.6" fill="${se.col}"/>`; } });
+  }
+  s+=`</svg>`;
+  document.getElementById("chart").innerHTML=s;
+  // легенда
+  let lg="";
+  if(cfg.kind==="flowcum") lg=`<span><i class="lg pos"></i>приток</span><span><i class="lg neg"></i>отток</span><span><i class="lg line"></i>накопленный итог</span>`;
+  else lg=`<span><i class="lg" style="background:${cfg.a.col}"></i>${cfg.a.name}</span><span><i class="lg" style="background:${cfg.b.col}"></i>${cfg.b.name}</span>`;
+  document.getElementById("chartLegend").innerHTML=lg;
+}
+
+function card(k,v,cls,h){ return `<div class="card"><div class="k">${k}</div>
+  <div class="v ${cls||''}">${v}</div>${h?`<div class="h">${h}</div>`:''}</div>`; }
+
+function renderCards(r){
+  const box=document.getElementById("cards"); let h="";
+  if(curView==="svod"||curView==="g35"||curView==="zpif"){
+    const s=r.svod;
+    h+=card("IRR проекта", PCT(s.irr), s.irr>=state.disc?"pos":"negv","hurdle "+PCT(state.disc));
+    h+=card("NPV проекта, тыс ₽", TH(s.npv), s.npv>=0?"pos":"negv");
+    h+=card("Окупаемость, лет", NUM(s.pb));
+    h+=card("CAPEX с НДС, тыс ₽", TH(r.meta.capexVat),"small");
+    h+=card("NOI стабилизации, тыс ₽", TH(r.noiOper[3]),"small","год 3");
+    h+=card("Yield on Cost", PCT(r.noiOper[3]/r.meta.capexVat),"small","NOI₃/CAPEX");
+  }
+  if(curView==="owner"){
+    const o=r.owner;
+    h+=card("IRR собственника", PCT(o.irr), o.irr>=state.disc?"pos":"negv","hurdle "+PCT(state.disc));
+    h+=card("NPV собственника, тыс ₽", TH(o.npv), o.npv>=0?"pos":"negv");
+    h+=card("MOIC", NUM(o.moic), o.moic>=1?"pos":"negv");
+    h+=card("Инвестиции, тыс ₽", TH(o.investTotal),"small");
+    h+=card("Налоги группы, тыс ₽", TH(o.taxGroup),"small");
+    h+=card("IRR проекта", PCT(r.svod.irr),"small");
+  }
+  box.innerHTML=h;
+}
+
+// формат ячейки: 'th' тыс ₽, 'num' число, 'pct' проценты
+function cellFmt(v,kind){
+  if(v===undefined||v===null||v===""||(typeof v==="number"&&isNaN(v))) return "";
+  if(kind==="pct") return (v*100).toFixed(1)+"%";
+  if(kind==="num") return v.toLocaleString("ru-RU",{maximumFractionDigits:0});
+  return TH(v);
+}
+function row(label,arr,mode,kind,tmode){
+  const map={true:"strong",1:"strong",hdr:"hdr",chk:"chk",blue:"blue",sec:"sec"};
+  let cls=map[mode]||"";
+  let h=`<tr class="${cls}"><td>${label}</td>`;
+  if(mode==="hdr"){ for(let t=0;t<=YEARS+1;t++) h+="<td></td>"; return h+"</tr>"; }
+  for(let t=0;t<=YEARS;t++) h+=`<td>${cellFmt(arr?arr[t]:"",kind)}</td>`;
+  // колонка «Всего»: сумма потоков; для балансов и накопленных — конечное значение; для GLA/ставки/% — пусто
+  let tot="";
+  if(arr && kind!=="num" && kind!=="pct"){
+    if(tmode==="last") tot=arr[YEARS];
+    else if(tmode!=="none"){ let s=0; for(let t=0;t<=YEARS;t++) s+=arr[t]||0; tot=s; }
+  }
+  h+=`<td class="total">${cellFmt(tot,kind)}</td>`;
+  return h+"</tr>";
+}
+function headRow(){
+  let h="<thead><tr><td>Показатель · тыс ₽</td><td>год 0<br>стройка</td>";
+  for(let t=1;t<=YEARS;t++) h+=`<td>год ${t}<br>${2026+t}</td>`;
+  h+=`<td class="total">Всего</td>`;
+  return h+"</tr></thead>";
+}
+// спецификации строк: [label, key, mode]  mode: 1=итог, 'hdr'=заголовок, 'chk'=проверка, 'num'/'pct'=формат
+const FORMS={
+ pl:{
+  svod:[["EGI (валовой доход)","egi"],["Операц. расходы (OpEx)","opex"],["Налог на имущество","propTax"],
+    ["NOI","noi","sec"],["Амортизация","dep"],["EBIT","ebit","sec"],
+    ["Проценты (внешние)","extInt"],["Доход от передачи здания","transferInc"],["EBT","ebt","sec"],
+    ["Налог на прибыль","nnp"],["Чистая прибыль","ni","blue"],
+    ["NOI margin","noiMargin","pct"],["Рентабельность ЧП","netMargin","pct"]],
+  g35:[["GLA","gla","num"],["Ставка, ₽/м²/мес","rate","num"],["Заполняемость","occ","pct"],
+    ["EGI","egi"],["Операц. расходы (OpEx)","opex"],["Налог на имущество","propTax"],["ВГО аренда (расход)","vgoRentExp"],
+    ["NOI","noi","sec"],["Амортизация","dep"],["EBIT","ebit","sec"],["Проценты по займу","intExp"],["Доход от передачи здания","transferInc"],
+    ["EBT","ebt","sec"],["Налог на прибыль","nnp"],["Чистая прибыль","ni","blue"],
+    ["Дивиденды начислен.","divDecl"],["НДФЛ","ndfl"],["Дивиденды нетто","divNet","sec"]],
+  zpif:[["Проц. доход по займу","intInc"],["ВГО аренда (доход)","rentInc"],["Налог на имущество","propTax"],
+    ["NOI / доход","noi","sec"],["Чистая прибыль","ni","blue"],["Дивиденды начислен.","divDecl"],["НДФЛ","ndfl"],
+    ["Распределения нетто НДФЛ","divNet","sec"]]
+ },
+ cf:{
+  svod:[["Операционный CF","cfOp","sec"],["EGI с НДС","egiGross"],["Операц. расходы","opex"],["Налог на имущество","propTax"],
+    ["Налог на прибыль","nnp"],["НДС (нетто)","vat"],
+    ["Инвестиционный CF","cfInv","sec"],["CAPEX","capex"],
+    ["Финансовый CF","cfFin","sec"],["Проценты уплач.","intPay"],["Погашение тела","prinPay"],["Дивиденды","div"],
+    ["FCFE (чистый поток)","fcfe","blue"],["Накопленная касса","cumCash"]],
+  g35:[["Операционный CF","cfOp","sec"],["EGI с НДС","egiGross"],["Операц. расходы","opex"],["Налог на имущество","propTax"],
+    ["НДС (нетто)","vat"],["ВГО аренда с НДС","vgoRentExp"],["Налог на прибыль","nnp"],
+    ["Инвестиционный CF","cfInv","sec"],["CAPEX","capex"],["Продажа здания (нетто НДС)","terminal"],
+    ["Финансовый CF","cfFin","sec"],["Взнос капитала","equity"],["Получен займ ЗПИФ","loanRecv"],["Получен банк-кредит","creditRecv"],
+    ["Проценты уплач.","intPay"],["Погашение тела","prinPay"],["Дивиденды","div"],
+    ["FCFE (чистый поток)","fcfe","blue"],["Накопленная касса","cumCash"]],
+  zpif:[["Операционный CF","cfOp","sec"],["Аренда (NOI)","rent"],["Возврат НДС","vatRef"],
+    ["Инвестиционный CF","cfInv","sec"],["CAPEX (стройка)","capex"],["Покупка здания","buyBld"],["Выдача займа Г35","loanIssue"],
+    ["Финансовый CF","cfFin","sec"],["Взнос пая","paiIn"],["Проценты получ.","intRecv"],["Возврат тела займа","prinRecv"],["Дивиденды","div"],
+    ["FCFE (чистый поток)","fcfe","blue"],["Накопленная касса","cumCash"]]
+ },
+ bal:{
+  svod:[["АКТИВЫ (итого)","assets","sec"],["Здание (недвижимость)","bld"],["НДС к возмещению","vatRef"],["Деньги","cash"],
+    ["КАПИТАЛ (итого)","equityTot","sec"],["Вложенный капитал","capital"],["Переоценка","reval"],["Нераспр. прибыль","retained"],["Дивиденды (накопл.)","divAccum"],
+    ["ОБЯЗАТЕЛЬСТВА (итого)","loanLiab","sec"],["Банк-кредит","loanLiab"],["Проверка (А−К−О)","check","chk"]],
+  g35:[["АКТИВЫ (итого)","assets","sec"],["Здание","bld"],["Вложения в паи ЗПИФ","pai"],["НДС к возмещению","vatRef"],["Деньги","cash"],
+    ["КАПИТАЛ (итого)","equityTot","sec"],["Вложенный капитал","capital"],["Переоценка","reval"],["Нераспр. прибыль","retained"],["Дивиденды (накопл.)","divAccum"],
+    ["ОБЯЗАТЕЛЬСТВА (итого)","loanLiab","sec"],["Займ/кредит полученный","loanLiab"],["Проверка (А−К−О)","check","chk"]],
+  zpif:[["АКТИВЫ (итого)","assets","sec"],["Здание","bld"],["Займ выданный Г35","loanAsset"],["НДС к возмещению","vatRef"],["Деньги","cash"],
+    ["КАПИТАЛ (итого)","equityTot","sec"],["Пай (вложения собственника)","capital"],["Нераспр. прибыль","retained"],["Дивиденды (накопл.)","divAccum"],
+    ["Проверка (А−К)","check","chk"]]
+ }
+};
+const FORMTITLE={pl:"Отчёт о прибылях и убытках (ОПиУ), тыс ₽",cf:"Отчёт о движении денежных средств (ДДС), тыс ₽",bal:"Баланс, тыс ₽"};
+
+function renderTable(r){
+  const tbl=document.getElementById("cfTable"); let b=headRow()+"<tbody>";
+  if(curView==="owner"){
+    document.getElementById("tblTitle").textContent="Собственник — совокупный денежный поток";
+    document.getElementById("formSeg").style.display="none";
+    const o=r.owner;
+    b+=row("Инвестиции (пай + equity Г35)",o.invest,"","","sum");
+    b+=row("ЗПИФ: проценты/аренда нетто НДФЛ",r.z.divNet,"","","sum");
+    b+=row("ЗПИФ: возврат тела займа",r.z.principalIn,"","","sum");
+    b+=row("Г35: дивиденды нетто НДФЛ",r.g.divNet,"","","sum");
+    b+=row("Рост стоимости здания (ΔMV)",o.dMV,"","","sum");
+    b+=row("СОВОКУПНЫЙ CF",o.series,true,"","sum");
+    b+=row("Кумулятивный CF",o.cum,"","","last");
+  } else {
+    document.getElementById("formSeg").style.display="";
+    document.getElementById("tblTitle").textContent=FORMTITLE[curForm];
+    const F=r.fin[curView][curForm];
+    const spec=FORMS[curForm][curView];
+    spec.forEach(s=>{ const th=s[2]; const isKind=(th==="num"||th==="pct");
+      const tmode = (curForm==="bal" || s[1]==="cumCash") ? "last" : "sum";
+      b+=row(s[0], F[s[1]], isKind?"":th, isKind?th:undefined, tmode); });
+  }
+  tbl.innerHTML=b+"</tbody>";
+}
+
+function renderFoot(r){
+  const m=r.meta;
+  const zp = !m.ownerG35;
+  let h=`<span class="badge">GLA ${m.GLA.toFixed(0)} м²</span>
+   <span class="badge">CAPEX ${(m.CAPEX/1e6).toFixed(1)} млн (без НДС)</span>
+   <span class="badge">Владелец: ${state.owner}</span>`;
+  if(zp){ h+=`<span class="badge">ЗПИФ владеет с года 0, Г35 в аренде</span>`; }
+  else {
+    h+=`<span class="badge">Заём ${m.loanIsBank?'банк':'ЗПИФ'} ${(m.P0/1e6).toFixed(1)} млн</span>
+        <span class="badge">Equity Г35 ${(m.g35Equity0/1e6).toFixed(1)} млн</span>
+        <span class="badge">Передача: ${m.H} год, ${state.transferForm}</span>`;
+  }
+  h+=`<div style="margin-top:10px">Свод IRR — mark-to-market: год 0 = −CAPEX с НДС, далее операционный CF плюс
+   изменение рыночной стоимости здания. Собственник — сумма распределений ЗПИФ (проценты/аренда нетто НДФЛ),
+   дивидендов Г35, возврата тела займа и роста стоимости здания.</div>
+   <div style="margin-top:8px;color:var(--accent2)">Все 7 сценариев сверены с книгой Excel (см. строку «Контроль по книге» под метриками).</div>`;
+  document.getElementById("footNote").innerHTML=h;
+}
+
+/* ============================================================
+   ЭКСПОРТ В EXCEL (SpreadsheetML 2003, без сторонних библиотек)
+   ============================================================ */
+function xE(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function xCellS(v){return `<Cell><Data ss:Type="String">${xE(v)}</Data></Cell>`;}
+function xCellN(v){ if(v===undefined||v===null||v===""||(typeof v==="number"&&isNaN(v))) return `<Cell/>`;
+  return `<Cell><Data ss:Type="Number">${v}</Data></Cell>`; }
+function xRow(cells){return `<Row>${cells}</Row>`;}
+function xTot(arr,tmode){ if(!arr)return ""; if(tmode==="last")return arr[YEARS];
+  let s=0; for(let t=0;t<=YEARS;t++) s+=arr[t]||0; return s; }
+function xFormRows(r,view){ // все 3 формы одного разреза
+  let rows="";
+  const hdrYears=()=>{let h=xCellS(""); h+=xCellS("год 0"); for(let t=1;t<=YEARS;t++) h+=xCellS("год "+t+" ("+(2026+t)+")"); return xRow(h+xCellS("Всего"));};
+  ["pl","cf","bal"].forEach(fk=>{
+    rows+=xRow(xCellS(FORMTITLE[fk]));
+    rows+=hdrYears();
+    const F=r.fin[view][fk];
+    FORMS[fk][view].forEach(s=>{
+      if(s[2]==="hdr"){ rows+=xRow(xCellS(s[0])); return; }
+      let c=xCellS(s[0]); const arr=F[s[1]]; const isKind=(s[2]==="num"||s[2]==="pct");
+      for(let t=0;t<=YEARS;t++) c+=xCellN(arr?arr[t]:"");
+      const tmode=(fk==="bal"||s[1]==="cumCash")?"last":"sum";
+      c+= isKind? xCellS("") : xCellN(xTot(arr,tmode));
+      rows+=xRow(c);
+    });
+    rows+=xRow(xCellS(""));
+  });
+  return rows;
+}
+function xSheetCF(name,r,view,metrics){
+  let rows="";
+  if(view==="owner"){
+    let h=xCellS("Собственник, ₽"); h+=xCellS("год 0");
+    for(let t=1;t<=YEARS;t++) h+=xCellS("год "+t); rows+=xRow(h+xCellS("Всего"));
+    const o=r.owner;
+    [["Инвестиции",o.invest,"sum"],["ЗПИФ: проценты/аренда нетто",r.z.divNet,"sum"],["ЗПИФ: возврат тела",r.z.principalIn,"sum"],
+     ["Г35: дивиденды нетто",r.g.divNet,"sum"],["Рост стоимости (ΔMV)",o.dMV,"sum"],["Совокупный CF",o.series,"sum"],["Кумулятивный CF",o.cum,"last"]]
+     .forEach(rr=>{ let c=xCellS(rr[0]); for(let t=0;t<=YEARS;t++) c+=xCellN(rr[1][t]); c+=xCellN(xTot(rr[1],rr[2])); rows+=xRow(c); });
+  } else {
+    rows+=xFormRows(r,view);
+  }
+  rows+=xRow(xCellS("")); rows+=xRow(xCellS("КЛЮЧЕВЫЕ ПОКАЗАТЕЛИ"));
+  metrics.forEach(m=>{ rows+=xRow(xCellS(m[0])+xCellN(m[1])); });
+  return `<Worksheet ss:Name="${xE(name)}"><Table>${rows}</Table></Worksheet>`;
+}
+function buildXls(){
+  const r=compute(state);
+  // лист параметров
+  let prm=xRow(xCellS("Параметр")+xCellS("Значение"));
+  prm+=xRow(xCellS("Сценарий")+xCellS(SCEN[curScen].name));
+  SLIDERS.forEach(sl=>{ if(sl.g)return;
+    const v=state[sl.k];
+    let cell = (typeof v==="number")? xCellN(v) : xCellS(v);
+    prm+=xRow(xCellS(sl.l+(sl.u?(", "+sl.u):""))+cell);
+  });
+  const meta=r.meta;
+  [["GLA, кв.м",meta.GLA],["CAPEX без НДС, ₽",meta.CAPEX],["CAPEX с НДС, ₽",meta.capexVat],
+   ["Заём ЗПИФ, ₽",meta.P0],["Equity Г35, ₽",meta.g35Equity0]].forEach(m=>prm+=xRow(xCellS(m[0])+xCellN(m[1])));
+  const prmSheet=`<Worksheet ss:Name="Параметры"><Table>${prm}</Table></Worksheet>`;
+
+  const svodM=[["IRR проекта",r.svod.irr],["NPV проекта, ₽",r.svod.npv],["Окупаемость, лет",r.svod.pb],
+    ["NOI стабилизации (год 3), ₽",r.noiOper[3]],["Yield on Cost",r.noiOper[3]/meta.capexVat]];
+  const ownM=[["IRR собственника",r.owner.irr],["NPV собственника, ₽",r.owner.npv],["MOIC",r.owner.moic],
+    ["Инвестиции, ₽",r.owner.investTotal],["Налоги группы, ₽",r.owner.taxGroup],["IRR проекта",r.svod.irr]];
+
+  const xml=`<?xml version="1.0" encoding="UTF-8"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
+${prmSheet}
+${xSheetCF("Свод",r,"svod",svodM)}
+${xSheetCF("Г35",r,"g35",svodM)}
+${xSheetCF("ЗПИФ",r,"zpif",svodM)}
+${xSheetCF("Собственник",r,"owner",ownM)}
+</Workbook>`;
+  const blob=new Blob(["﻿"+xml],{type:"application/vnd.ms-excel"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  const nm="Кировск_"+SCEN[curScen].name.replace(/[^0-9A-Za-zА-Яа-я]+/g,"_");
+  a.href=url; a.download=nm+".xls"; document.body.appendChild(a); a.click();
+  setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},100);
+}
+
+/* ---- события ---- */
+document.getElementById("xlsBtn").onclick=buildXls;
+document.getElementById("viewSeg").addEventListener("click",e=>{
+  const btn=e.target.closest("button"); if(!btn)return;
+  curView=btn.dataset.v;
+  document.querySelectorAll("#viewSeg button").forEach(b=>b.classList.toggle("on",b===btn));
+  render();
+});
+document.getElementById("formSeg").addEventListener("click",e=>{
+  const btn=e.target.closest("button"); if(!btn)return;
+  curForm=btn.dataset.f;
+  document.querySelectorAll("#formSeg button").forEach(b=>b.classList.toggle("on",b===btn));
+  render();
+});
+const scSel=document.getElementById("scenario");
+SCEN.forEach((s,i)=>{const o=document.createElement("option");o.value=i;o.textContent=s.name;scSel.appendChild(o);});
+scSel.value=curScen;
+scSel.onchange=()=>loadScenario(parseInt(scSel.value));
+document.getElementById("resetBtn").onclick=()=>loadScenario(curScen);
+
+loadScenario(curScen);
+</script>
+</body>
+</html>
