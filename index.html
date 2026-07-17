@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="utf-8">
@@ -9,24 +9,27 @@
   /* палитра: #ECECFC лаванда · #6956F6 сине-фиолет · #A3A1AF серый · #8C4AF2 фиолет · #AA9ADB лаванда-2 */
   --bg:#2a2833; --panel:#332f3d; --panel2:#3e3a48; --line:#4c4857; --text:#eceaf2;
   --muted:#a3a1af; --accent:#aa9adb; --accent2:#37d39b; --warn:#ffb454; --neg:#ff6b6b;
-  --chip:#3a3350; --chipA:#4b3a75; --fill:#8c4af2; --fillH:#7d3ce6; --fillT:#5f2ea0;
+  --chip:#3a3350; --chipA:#4b3a75; --fill:#8c4af2; --fillH:#7d3ce6; --fillT:#5f2ea0; --gtext:#17e1bc;
+  /* палитра графиков CYBERTECH */
+  --c1:#0e9e85; --c2:#ff00ad; --c3:#8400c0; --c4:#0e186f;
 }
 @media (prefers-color-scheme: light){
   :root{ --bg:#ececfc; --panel:#ffffff; --panel2:#e4e4f4; --line:#d4d3e4; --text:#221f33;
     --muted:#6e6c7c; --accent:#6956f6; --accent2:#159e6f; --warn:#c77b00; --neg:#d23b3b;
-    --chip:#e6e4f5; --chipA:#d7ccf3; --fill:#8c4af2; --fillH:#7d3ce6; --fillT:#7a3fd8; }
+    --chip:#e6e4f5; --chipA:#d7ccf3; --fill:#8c4af2; --fillH:#7d3ce6; --fillT:#7a3fd8; --gtext:#0e186f; }
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
-  font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;font-size:14px;line-height:1.4}
+  font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.4}
+select,button,input,table,th,td{font-family:Arial,Helvetica,sans-serif}
 .app{display:flex;min-height:100vh;flex-wrap:wrap}
 .side{width:340px;flex:0 0 340px;background:var(--panel);border-right:1px solid var(--line);
   padding:16px;overflow-y:auto;max-height:100vh;position:sticky;top:0}
 .main{flex:1 1 480px;padding:18px 22px;min-width:0}
 h1{font-size:17px;margin:0 0 2px}
 .sub{color:var(--muted);font-size:12px;margin-bottom:14px}
-.grp{margin:14px 0 6px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);
-  border-bottom:1px solid var(--line);padding-bottom:4px}
+.grp{margin:14px 0 6px;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--text);
+  font-weight:800;border-bottom:1px solid var(--line);padding-bottom:4px}
 .sl{margin:11px 0}
 .sl .lbl{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;margin-bottom:3px}
 .sl .lbl b{color:var(--text);font-weight:600}
@@ -35,10 +38,10 @@ input[type=range]{width:100%;accent-color:var(--accent);height:20px}
 select{width:100%;background:var(--panel2);color:var(--text);border:1px solid var(--line);
   border-radius:8px;padding:7px 9px;font-size:13px}
 .seg{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
-.seg button{flex:1 1 auto;background:var(--chip);color:var(--text);border:1px solid var(--line);
-  border-radius:9px;padding:8px 10px;cursor:pointer;font-size:13px;font-weight:600;transition:.12s}
-.seg button.on{background:var(--chipA);border-color:var(--accent);color:var(--text)}
-.seg button:hover{border-color:var(--accent)}
+.seg button{flex:1 1 auto;background:var(--fill);color:#fff;border:1px solid transparent;
+  border-radius:9px;padding:8px 10px;cursor:pointer;font-size:13px;font-weight:600;transition:.12s;opacity:.72}
+.seg button.on{background:var(--fillT);border-color:#fff3;color:#fff;opacity:1}
+.seg button:hover{opacity:1}
 .topbar{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;justify-content:space-between;margin-bottom:6px}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:12px;margin:14px 0 20px}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
@@ -51,7 +54,9 @@ table{border-collapse:collapse;width:100%;font-size:12.5px;font-variant-numeric:
 .tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
 th,td{padding:6px 9px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line)}
 th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:var(--panel);z-index:1}
-thead th{background:var(--panel2);color:var(--muted);font-weight:600;position:sticky;top:0}
+#cfTable thead td{background:var(--fill);color:#fff;font-weight:700;position:sticky;top:0}
+#cfTable thead td:first-child{background:var(--fill);color:#fff}
+#cfTable thead td.total{background:var(--fillT);color:#fff}
 tbody tr:hover td{background:var(--panel2)}
 tr.strong td{font-weight:700;background:var(--panel2)}
 tr.strong td:first-child{background:var(--panel2)}
@@ -72,8 +77,8 @@ h2{font-size:14px;margin:22px 0 8px;color:var(--accent)}
 .legend{display:flex;gap:16px;flex-wrap:wrap;color:var(--muted);font-size:12px;margin-top:6px}
 .legend span{display:flex;align-items:center;gap:6px}
 .lg{width:14px;height:10px;border-radius:3px;display:inline-block}
-.lg.pos{background:var(--accent2)} .lg.neg{background:var(--neg)}
-.lg.line{height:0;border-top:2px solid var(--accent);width:16px}
+.lg.pos{background:var(--c1)} .lg.neg{background:var(--c2)}
+.lg.line{height:0;border-top:2px solid var(--c3);width:16px}
 .xls{background:var(--chipA);color:var(--text);border:1px solid var(--accent);border-radius:9px;
   padding:8px 14px;cursor:pointer;font-size:13px;font-weight:600}
 .xls:hover{filter:brightness(1.1)}
@@ -84,7 +89,7 @@ tr.hdr td{background:var(--panel2);color:var(--accent);font-weight:700;font-size
   text-transform:uppercase;letter-spacing:.04em}
 tr.hdr td:first-child{background:var(--panel2)}
 tr.chk td{color:var(--muted);font-style:italic}
-#cfTable thead td{font-weight:700;color:var(--text)}
+#cfTable thead td{font-weight:700}
 /* итоговая строка секции (итоги наверху) */
 tr.sec td{background:var(--panel2);color:var(--accent);font-weight:700;font-size:11.5px;letter-spacing:.03em}
 tr.sec td:first-child{background:var(--panel2);color:var(--accent);text-transform:uppercase}
@@ -92,8 +97,9 @@ tr.sec td:first-child{background:var(--panel2);color:var(--accent);text-transfor
 tr.blue td{background:var(--fill);color:#fff;font-weight:700}
 tr.blue td:first-child{background:var(--fill);color:#fff}
 tr.blue:hover td{background:var(--fillH)}
-/* колонка «Всего» */
-td.total,#cfTable thead td.total{font-weight:700;border-left:2px solid var(--accent);background:var(--panel2)}
+/* колонка «Всего» — значения не выделяем жирным (наследуют вес строки) */
+tbody td.total{border-left:2px solid var(--accent);background:var(--panel2);font-weight:400}
+#cfTable thead td.total{font-weight:700;border-left:2px solid var(--accent)}
 tr.blue td.total{background:var(--fillT);color:#fff}
 tr.sec td.total{background:var(--panel2);color:var(--accent)}
 tr.strong td.total{background:var(--panel2)}
@@ -101,8 +107,8 @@ tr.strong td.total{background:var(--panel2)}
   border-radius:10px;font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center}
 .refbox b{color:var(--text)}
 .refbox .d{color:var(--warn)}
-.gtxt{fill:var(--muted);font-size:10px;font-family:inherit}
-.gval{fill:var(--text);font-size:9.5px;font-family:inherit;font-variant-numeric:tabular-nums}
+.gtxt{fill:var(--gtext);font-size:10px;font-family:Arial,sans-serif;font-weight:600}
+.gval{fill:var(--gtext);font-size:9.5px;font-family:Arial,sans-serif;font-weight:700;font-variant-numeric:tabular-nums}
 </style>
 </head>
 <body>
@@ -135,6 +141,7 @@ tr.strong td.total{background:var(--panel2)}
       <button data-v="g35">Г35</button>
       <button data-v="zpif">ЗПИФ</button>
       <button data-v="owner">Собственник</button>
+      <button data-v="compare">Сравнение</button>
     </div>
 
     <div class="cards" id="cards"></div>
@@ -142,15 +149,11 @@ tr.strong td.total{background:var(--panel2)}
 
     <div class="chartbox">
       <div class="chart-h">
-        <h2 style="margin:0">Денежный поток и накопленный итог, млн ₽</h2>
+        <h2 style="margin:0" id="chartTitle">Денежный поток и накопленный итог</h2>
         <button class="xls" id="xlsBtn">⭳ Выгрузить в Excel</button>
       </div>
       <div id="chart"></div>
-      <div class="legend">
-        <span><i class="lg pos"></i>приток</span>
-        <span><i class="lg neg"></i>отток</span>
-        <span><i class="lg line"></i>накопленный итог</span>
-      </div>
+      <div class="legend" id="chartLegend"></div>
     </div>
 
     <div class="formhead">
@@ -359,9 +362,12 @@ function compute(p){
   const moic= investTotal>0? distSum/investTotal : NaN;
 
   // налоги
-  let taxAccr=0, taxPaid=0;
-  for(let t=1;t<=YEARS;t++){ taxAccr += -(g.nnp[t]) + ptBase*pt; }        // НнП + налог имущества (начисл.)
-  taxPaid = taxAccr; // упрощённо (в книге ещё НДС-нетто; см. прим.)
+  let sumProp=0,sumNnp=0,sumEgi=0,sumNdfl=0;
+  for(let t=1;t<=YEARS;t++){ sumProp+=ptBase*pt; sumNnp+=-(g.nnp[t]); sumEgi+=egi[t]; sumNdfl+= -(g.ndfl[t]) - (z.ndfl[t]); }
+  const vatPaidNet = sumEgi*vat - CAPEX*vat;                    // НДС нетто уплаченный (выходной − возмещение стройки)
+  const taxBizAccr = sumProp + sumNnp;                          // налоги бизнеса начисленные (имущество + прибыль)
+  const taxBizPaid = taxBizAccr + vatPaidNet;                   // + НДС нетто
+  const taxOwner = taxBizAccr + sumNdfl + vatPaidNet;           // все налоги группы (собственника)
 
   /* ============ ПОЛНЫЕ ФОРМЫ: ОПиУ / ДДС / БАЛАНС ============ */
   const dep = constrCost/amort;
@@ -488,21 +494,28 @@ function compute(p){
     } }
   SV.bal={bld:svBld,vatRef:svVatR,cash:svCash,assets:svAssets,
           capital:svPaid,reval:svReval,retained:svRet,divAccum:svDivC,equityTot:svEqT,loanLiab:svLiab,check:svChk};
+  // маржа и доходность капитала (по годам)
+  const svNoiMargin=A(),svNetMargin=A(),svRoe=A(),svRoic=A();
+  for(let t=1;t<=YEARS;t++){
+    svNoiMargin[t]= SV.pl.egi[t]>0? SV.pl.noi[t]/SV.pl.egi[t] : 0;
+    svNetMargin[t]= SV.pl.egi[t]>0? SV.pl.ni[t]/SV.pl.egi[t] : 0;
+    const eq=SV.bal.equityTot[t]||0, ic=eq+(SV.bal.loanLiab[t]||0);
+    svRoe[t]= eq!==0? SV.pl.ni[t]/eq : 0;
+    svRoic[t]= ic!==0? SV.pl.ebit[t]*(1-nnp)/ic : 0;
+  }
+  SV.pl.noiMargin=svNoiMargin; SV.pl.netMargin=svNetMargin;
+  SV.roe=svRoe; SV.roic=svRoic; SV.noi=SV.pl.noi; SV.ni=SV.pl.ni;
 
   const fin={g35:G,zpif:Z,svod:SV};
 
   return {
     meta:{GLA,constrCost,CAPEX,capexVat,vatRefund,P0,g35Equity0,H:Heff,ownerG35,sale,loanIsBank},
     egi,occA,rentA,noiOper,mv,g,z,g35Inject,fin,
-    svod:{series:svodSeries,cfop:svodCFop,cum:svodCum,pv:svodPV,irr:svodIRR,npv:svodNPV,pb:svodPB,nnp:nnpSvod},
+    svod:{series:svodSeries,cfop:svodCFop,cum:svodCum,pv:svodPV,irr:svodIRR,npv:svodNPV,pb:svodPB,nnp:nnpSvod,
+          taxBizAccr,taxBizPaid},
     owner:{invest:ownerInvest,dist:ownerDist,dMV,series:ownerSeries,cum:ownerCum,irr:ownerIRR,npv:ownerNPV,
-           moic,investTotal,taxGroup: taxGroupCalc(g,z,ptBase,pt,ownerG35)}
+           moic,investTotal,taxGroup:taxOwner}
   };
-}
-function taxGroupCalc(g,z,ptBase,pt,ownerG35){
-  let s=0;
-  for(let t=1;t<=YEARS;t++){ s+= -(g.nnp[t]) + ptBase*pt - (g.ndfl[t]) - (z.ndfl[t]); }
-  return s;
 }
 
 /* ============================================================
@@ -619,11 +632,39 @@ const NUM=v=> isNaN(v)?"н/д":v.toFixed(2);
 
 function render(){
   const r=compute(state);
-  document.getElementById("scLabel").textContent=SCEN[curScen].name;
+  const isCmp = curView==="compare";
+  document.getElementById("scLabel").textContent = isCmp? "Сравнение 7 сценариев" : SCEN[curScen].name;
   document.getElementById("viewName").textContent=
-    {svod:"Свод (проект)",g35:"Г35",zpif:"ЗПИФ",owner:"Собственник"}[curView];
+    {svod:"Свод (проект)",g35:"Г35",zpif:"ЗПИФ",owner:"Собственник",compare:"Сравнение"}[curView];
+  document.querySelector(".chartbox").style.display = isCmp?"none":"";
+  document.getElementById("cards").style.display = isCmp?"none":"";
+  document.getElementById("refbox").style.display = isCmp?"none":"";
+  document.getElementById("formSeg").style.display = (isCmp||curView==="owner")?"none":"";
+  if(isCmp){ renderCompare(); document.getElementById("footNote").innerHTML=
+    `<div style="color:var(--muted)">Сравнение всех 7 сценариев (пресеты из книги). Значения рассчитаны движком калькулятора; сверены с листом СРАВНЕНИЕ.</div>`; return; }
   renderCards(r); renderRef(r); renderChart(r); renderTable(r); renderFoot(r);
   window.__r=r; // для экспорта
+}
+function renderCompare(){
+  const all=SCEN.map((sc,i)=>({name:"Сц."+(i+1), r:compute(Object.assign({},CONST_P,JSON.parse(JSON.stringify(sc.p))))}));
+  document.getElementById("tblTitle").textContent="Сравнение сценариев";
+  const pctf=v=>isNaN(v)?"н/д":(v*100).toFixed(1)+"%", numf=v=>isNaN(v)?"н/д":v.toFixed(2), thf=v=>TH(v);
+  let b="<thead><tr><td>Показатель</td>"; all.forEach(a=>b+=`<td>${a.name}</td>`); b+="</tr></thead><tbody>";
+  const secR=t=>`<tr class="sec"><td>${t}</td>${"<td></td>".repeat(all.length)}</tr>`;
+  const rowC=(label,fn,fmt,cls)=>{ let h=`<tr class="${cls||''}"><td>${label}</td>`;
+    all.forEach(a=>{ const v=fn(a.r); const best=false; h+=`<td>${fmt(v)}</td>`; }); return h+"</tr>"; };
+  b+=secR("Показатели эффективности общие");
+  b+=rowC("IRR проекта",r=>r.svod.irr,pctf,"blue");
+  b+=rowC("NPV проекта, тыс ₽",r=>r.svod.npv,thf);
+  b+=rowC("Период окупаемости, лет",r=>r.svod.pb,numf);
+  b+=rowC("Налоги бизнеса начисленные, тыс ₽",r=>r.svod.taxBizAccr,thf);
+  b+=rowC("Налоги бизнеса уплаченные нетто, тыс ₽",r=>r.svod.taxBizPaid,thf);
+  b+=secR("Показатели эффективности собственника");
+  b+=rowC("IRR собственника",r=>r.owner.irr,pctf,"blue");
+  b+=rowC("NPV собственника, тыс ₽",r=>r.owner.npv,thf);
+  b+=rowC("MOIC",r=>r.owner.moic,numf);
+  b+=rowC("Налоги собственника всего, тыс ₽",r=>r.owner.taxGroup,thf);
+  document.getElementById("cfTable").innerHTML=b+"</tbody>";
 }
 
 function renderRef(r){
@@ -659,37 +700,59 @@ function viewFlow(r){
   return {flow,cum};
 }
 
+function chartConfig(r){
+  if(curView==="owner"){ const {flow,cum}=viewFlow(r);
+    return {kind:"flowcum",title:"Совокупный CF и накопленный итог, млн ₽",flow,cum}; }
+  if(curForm==="cf"){ const {flow,cum}=viewFlow(r);
+    return {kind:"flowcum",title:"Денежный поток и накопленный итог, млн ₽",flow,cum}; }
+  const F=r.fin[curView];
+  if(curForm==="pl") return {kind:"bars2",title:"NOI и чистая прибыль по годам, млн ₽",
+    a:{name:"NOI",arr:F.pl.noi,col:"var(--c1)"},b:{name:"Чистая прибыль",arr:F.pl.ni,col:"var(--c2)"}};
+  return {kind:"lines2",pct:true,title:"ROE и ROIC по годам, %",
+    a:{name:"ROE",arr:r.fin.svod.roe,col:"var(--c2)"},b:{name:"ROIC",arr:r.fin.svod.roic,col:"var(--c1)"}};
+}
 function renderChart(r){
-  const {flow,cum}=viewFlow(r);
-  const W=760,H=260,padL=44,padR=44,padT=16,padB=26;
-  const iw=W-padL-padR, ih=H-padT-padB;
-  const bw=iw/(YEARS+1);
-  let maxV=1,minV=0;
-  for(let t=0;t<=YEARS;t++){ maxV=Math.max(maxV,flow[t],cum[t]); minV=Math.min(minV,flow[t],cum[t]); }
-  const pad=(maxV-minV)*0.08||1; maxV+=pad; minV-=pad;
-  const y=v=> padT + ih*(maxV-v)/(maxV-minV);
-  const y0=y(0);
+  const cfg=chartConfig(r);
+  document.getElementById("chartTitle").textContent=cfg.title;
+  const W=760,H=260,padL=50,padR=30,padT=16,padB=26, iw=W-padL-padR, ih=H-padT-padB, bw=iw/(YEARS+1);
+  let vals=[0];
+  if(cfg.kind==="flowcum"){ for(let t=0;t<=YEARS;t++) vals.push(cfg.flow[t],cfg.cum[t]); }
+  else { for(let t=1;t<=YEARS;t++) vals.push(cfg.a.arr[t]||0,cfg.b.arr[t]||0); }
+  let maxV=Math.max(...vals), minV=Math.min(...vals); if(maxV===minV) maxV=minV+1;
+  const pad=(maxV-minV)*0.1||1; maxV+=pad; minV-=pad;
+  const y=v=>padT+ih*(maxV-v)/(maxV-minV), y0=y(0);
+  const fmtA=v=> cfg.pct? Math.round(v*100)+"%" : (v/1e6).toFixed(0);
   let s=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}">`;
-  // ось нуля
   s+=`<line x1="${padL}" y1="${y0.toFixed(1)}" x2="${W-padR}" y2="${y0.toFixed(1)}" stroke="var(--line)" stroke-width="1"/>`;
-  // столбцы
-  for(let t=0;t<=YEARS;t++){
-    const cx=padL+bw*t+bw*0.5;
-    const v=flow[t]/1e6;
-    const top=Math.min(y(flow[t]),y0), h=Math.abs(y(flow[t])-y0);
-    const col=flow[t]>=0?"var(--accent2)":"var(--neg)";
-    s+=`<rect x="${(cx-bw*0.32).toFixed(1)}" y="${top.toFixed(1)}" width="${(bw*0.64).toFixed(1)}" height="${Math.max(h,0.5).toFixed(1)}" rx="2" fill="${col}" opacity="0.85"/>`;
-    if(Math.abs(v)>=0.5) s+=`<text class="gval" x="${cx.toFixed(1)}" y="${(flow[t]>=0?top-3:top+h+9).toFixed(1)}" text-anchor="middle">${v.toFixed(0)}</text>`;
-    s+=`<text class="gtxt" x="${cx.toFixed(1)}" y="${(H-8).toFixed(1)}" text-anchor="middle">${t}</text>`;
+  for(let k=0;k<=4;k++){ const v=minV+(maxV-minV)*k/4; s+=`<text class="gtxt" x="${padL-6}" y="${(y(v)+3).toFixed(1)}" text-anchor="end">${fmtA(v)}</text>`; }
+  const startT = cfg.kind==="flowcum"?0:1;
+  for(let t=startT;t<=YEARS;t++){ const cx=padL+bw*t+bw*0.5;
+    s+=`<text class="gtxt" x="${cx.toFixed(1)}" y="${(H-8).toFixed(1)}" text-anchor="middle">${t}</text>`; }
+  if(cfg.kind==="flowcum"){
+    for(let t=0;t<=YEARS;t++){ const cx=padL+bw*t+bw*0.5, v=cfg.flow[t]/1e6;
+      const top=Math.min(y(cfg.flow[t]),y0), h=Math.abs(y(cfg.flow[t])-y0);
+      s+=`<rect x="${(cx-bw*0.32).toFixed(1)}" y="${top.toFixed(1)}" width="${(bw*0.64).toFixed(1)}" height="${Math.max(h,0.5).toFixed(1)}" rx="2" fill="${cfg.flow[t]>=0?'var(--c1)':'var(--c2)'}" opacity="0.9"/>`;
+      if(Math.abs(v)>=0.5) s+=`<text class="gval" x="${cx.toFixed(1)}" y="${(cfg.flow[t]>=0?top-3:top+h+9).toFixed(1)}" text-anchor="middle">${v.toFixed(0)}</text>`; }
+    let pts=""; for(let t=0;t<=YEARS;t++){ const cx=padL+bw*t+bw*0.5; pts+=`${cx.toFixed(1)},${y(cfg.cum[t]).toFixed(1)} `; }
+    s+=`<polyline points="${pts.trim()}" fill="none" stroke="var(--c3)" stroke-width="2.4"/>`;
+    for(let t=0;t<=YEARS;t++){ const cx=padL+bw*t+bw*0.5; s+=`<circle cx="${cx.toFixed(1)}" cy="${y(cfg.cum[t]).toFixed(1)}" r="2.6" fill="var(--c3)"/>`; }
+  } else if(cfg.kind==="bars2"){
+    for(let t=1;t<=YEARS;t++){ const cx=padL+bw*t+bw*0.5;
+      [[cfg.a,-1],[cfg.b,1]].forEach(([se,side])=>{ const v=se.arr[t]||0, top=Math.min(y(v),y0), h=Math.abs(y(v)-y0);
+        const x=side<0? cx-bw*0.34 : cx+0.02*bw;
+        s+=`<rect x="${x.toFixed(1)}" y="${top.toFixed(1)}" width="${(bw*0.32).toFixed(1)}" height="${Math.max(h,0.5).toFixed(1)}" rx="2" fill="${se.col}" opacity="0.88"/>`; }); }
+  } else { // lines2
+    [cfg.a,cfg.b].forEach(se=>{ let pts=""; for(let t=1;t<=YEARS;t++){ const cx=padL+bw*t+bw*0.5; pts+=`${cx.toFixed(1)},${y(se.arr[t]||0).toFixed(1)} `; }
+      s+=`<polyline points="${pts.trim()}" fill="none" stroke="${se.col}" stroke-width="2.4"/>`;
+      for(let t=1;t<=YEARS;t++){ const cx=padL+bw*t+bw*0.5; s+=`<circle cx="${cx.toFixed(1)}" cy="${y(se.arr[t]||0).toFixed(1)}" r="2.6" fill="${se.col}"/>`; } });
   }
-  // линия накопленного итога
-  let pts=""; for(let t=0;t<=YEARS;t++){ const cx=padL+bw*t+bw*0.5; pts+=`${cx.toFixed(1)},${y(cum[t]).toFixed(1)} `; }
-  s+=`<polyline points="${pts.trim()}" fill="none" stroke="var(--accent)" stroke-width="2.2"/>`;
-  for(let t=0;t<=YEARS;t++){ const cx=padL+bw*t+bw*0.5; s+=`<circle cx="${cx.toFixed(1)}" cy="${y(cum[t]).toFixed(1)}" r="2.6" fill="var(--accent)"/>`; }
-  // подписи оси Y
-  for(let k=0;k<=4;k++){ const v=minV+(maxV-minV)*k/4; s+=`<text class="gtxt" x="${padL-6}" y="${(y(v)+3).toFixed(1)}" text-anchor="end">${(v/1e6).toFixed(0)}</text>`; }
   s+=`</svg>`;
   document.getElementById("chart").innerHTML=s;
+  // легенда
+  let lg="";
+  if(cfg.kind==="flowcum") lg=`<span><i class="lg pos"></i>приток</span><span><i class="lg neg"></i>отток</span><span><i class="lg line"></i>накопленный итог</span>`;
+  else lg=`<span><i class="lg" style="background:${cfg.a.col}"></i>${cfg.a.name}</span><span><i class="lg" style="background:${cfg.b.col}"></i>${cfg.b.name}</span>`;
+  document.getElementById("chartLegend").innerHTML=lg;
 }
 
 function card(k,v,cls,h){ return `<div class="card"><div class="k">${k}</div>
@@ -741,8 +804,8 @@ function row(label,arr,mode,kind,tmode){
   return h+"</tr>";
 }
 function headRow(){
-  let h="<thead><tr><td>Показатель · тыс ₽</td><td>Год 0<br>стройка</td>";
-  for(let t=1;t<=YEARS;t++) h+=`<td>Год ${t}<br>${2026+t}</td>`;
+  let h="<thead><tr><td>Показатель · тыс ₽</td><td>год 0<br>стройка</td>";
+  for(let t=1;t<=YEARS;t++) h+=`<td>год ${t}<br>${2026+t}</td>`;
   h+=`<td class="total">Всего</td>`;
   return h+"</tr></thead>";
 }
@@ -751,17 +814,17 @@ const FORMS={
  pl:{
   svod:[["EGI (валовой доход)","egi"],["Операц. расходы (OpEx)","opex"],["Налог на имущество","propTax"],
     ["NOI","noi","sec"],["Амортизация","dep"],["EBIT","ebit","sec"],
-    ["Проценты (внешние)","extInt"],["Доход от передачи здания","transferInc"],["EBT","ebt",1],
-    ["Налог на прибыль","nnp"],["Чистая прибыль","ni","sec"],
-    ["Дивиденды начислен.","divDecl"],["НДФЛ на дивиденды","ndfl"],["Дивиденды нетто","divNet",1]],
+    ["Проценты (внешние)","extInt"],["Доход от передачи здания","transferInc"],["EBT","ebt","sec"],
+    ["Налог на прибыль","nnp"],["Чистая прибыль","ni","blue"],
+    ["NOI margin","noiMargin","pct"],["Рентабельность ЧП","netMargin","pct"]],
   g35:[["GLA","gla","num"],["Ставка, ₽/м²/мес","rate","num"],["Заполняемость","occ","pct"],
     ["EGI","egi"],["Операц. расходы (OpEx)","opex"],["Налог на имущество","propTax"],["ВГО аренда (расход)","vgoRentExp"],
     ["NOI","noi","sec"],["Амортизация","dep"],["EBIT","ebit","sec"],["Проценты по займу","intExp"],["Доход от передачи здания","transferInc"],
-    ["EBT","ebt",1],["Налог на прибыль","nnp"],["Чистая прибыль","ni","sec"],
-    ["Дивиденды начислен.","divDecl"],["НДФЛ","ndfl"],["Дивиденды нетто","divNet",1]],
+    ["EBT","ebt","sec"],["Налог на прибыль","nnp"],["Чистая прибыль","ni","blue"],
+    ["Дивиденды начислен.","divDecl"],["НДФЛ","ndfl"],["Дивиденды нетто","divNet","sec"]],
   zpif:[["Проц. доход по займу","intInc"],["ВГО аренда (доход)","rentInc"],["Налог на имущество","propTax"],
-    ["NOI / доход","noi","sec"],["Чистая прибыль","ni","sec"],["Дивиденды начислен.","divDecl"],["НДФЛ","ndfl"],
-    ["Распределения нетто НДФЛ","divNet",1]]
+    ["NOI / доход","noi","sec"],["Чистая прибыль","ni","blue"],["Дивиденды начислен.","divDecl"],["НДФЛ","ndfl"],
+    ["Распределения нетто НДФЛ","divNet","sec"]]
  },
  cf:{
   svod:[["Операционный CF","cfOp","sec"],["EGI с НДС","egiGross"],["Операц. расходы","opex"],["Налог на имущество","propTax"],
@@ -850,7 +913,7 @@ function xTot(arr,tmode){ if(!arr)return ""; if(tmode==="last")return arr[YEARS]
   let s=0; for(let t=0;t<=YEARS;t++) s+=arr[t]||0; return s; }
 function xFormRows(r,view){ // все 3 формы одного разреза
   let rows="";
-  const hdrYears=()=>{let h=xCellS(""); h+=xCellS("Год 0"); for(let t=1;t<=YEARS;t++) h+=xCellS("Год "+t+" ("+(2026+t)+")"); return xRow(h+xCellS("Всего"));};
+  const hdrYears=()=>{let h=xCellS(""); h+=xCellS("год 0"); for(let t=1;t<=YEARS;t++) h+=xCellS("год "+t+" ("+(2026+t)+")"); return xRow(h+xCellS("Всего"));};
   ["pl","cf","bal"].forEach(fk=>{
     rows+=xRow(xCellS(FORMTITLE[fk]));
     rows+=hdrYears();
@@ -870,8 +933,8 @@ function xFormRows(r,view){ // все 3 формы одного разреза
 function xSheetCF(name,r,view,metrics){
   let rows="";
   if(view==="owner"){
-    let h=xCellS("Собственник, ₽"); h+=xCellS("Год 0");
-    for(let t=1;t<=YEARS;t++) h+=xCellS("Год "+t); rows+=xRow(h+xCellS("Всего"));
+    let h=xCellS("Собственник, ₽"); h+=xCellS("год 0");
+    for(let t=1;t<=YEARS;t++) h+=xCellS("год "+t); rows+=xRow(h+xCellS("Всего"));
     const o=r.owner;
     [["Инвестиции",o.invest,"sum"],["ЗПИФ: проценты/аренда нетто",r.z.divNet,"sum"],["ЗПИФ: возврат тела",r.z.principalIn,"sum"],
      ["Г35: дивиденды нетто",r.g.divNet,"sum"],["Рост стоимости (ΔMV)",o.dMV,"sum"],["Совокупный CF",o.series,"sum"],["Кумулятивный CF",o.cum,"last"]]
